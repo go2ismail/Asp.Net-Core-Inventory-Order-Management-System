@@ -3,7 +3,7 @@ Project example Asp.Net Core Mvc implementation of inventory order management sy
 
 
 ![inventory](coderush/wwwroot/images/scm6.png)
-![inventory](coderush/wwwroot/images/scm5.png)
+![inventory](coderush/wwwroot/images/scm7.png)
 
 
 # Features
