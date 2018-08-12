@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="EJServices.Wcf.Pivotgrid.Olap" CodeBehind="Olap.svc.cs" %>

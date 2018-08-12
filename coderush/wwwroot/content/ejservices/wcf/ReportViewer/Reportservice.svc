@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="EJServices.Wcf.ReportViewer.Reportservice" CodeBehind="Reportservice.svc.cs" %>

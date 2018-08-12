@@ -1,0 +1,149 @@
+﻿
+@{
+    ViewData["Title"] = "Shipment";
+}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title text-primary"><i class="fa fa-truck"></i> @ViewData["Title"]</h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                            title="Collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div id="Grid"></div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+               
+            </div>
+            <!-- /.box-footer-->
+        </div>
+        <!-- /.box -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+@section Styles{
+
+}
+
+@section Scripts{
+
+    <script type="text/javascript">
+        $(function () {
+
+            var dataManager = ej.DataManager({
+                url: "/api/Shipment",
+                adaptor: new ej.WebApiAdaptor(),
+                offline: true
+            });
+
+            var dataManagerWarehouse = ej.DataManager({
+                url: "/api/Warehouse",
+                adaptor: new ej.WebApiAdaptor()
+            });
+
+            var dataManagerSalesOrder = ej.DataManager({
+                url: "/api/SalesOrder",
+                adaptor: new ej.WebApiAdaptor()
+            });
+
+            var dataManagerShipmentType = ej.DataManager({
+                url: "/api/ShipmentType",
+                adaptor: new ej.WebApiAdaptor()
+            });
+
+            dataManager.ready.done(function (e) { 
+                $("#Grid").ejGrid({
+                    dataSource: ej.DataManager({
+                        json: e.result,
+                        adaptor: new ej.remoteSaveAdaptor(),
+                        insertUrl: "/api/Shipment/Insert",
+                        updateUrl: "/api/Shipment/Update",
+                        removeUrl: "/api/Shipment/Remove",
+                    }),
+                    toolbarSettings: {
+                        showToolbar: true,
+                        toolbarItems: ["add", "edit", "delete", "update", "cancel", "search", "printGrid"]
+                    },
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true,
+                        showDeleteConfirmDialog: true,
+                        editMode: "dialog"
+                    },
+                    isResponsive: true,
+                    enableResponsiveRow: true,
+                    allowSorting: true,
+                    allowSearching: true,
+                    allowFiltering: true,
+                    filterSettings: {
+                        filterType: "excel",
+                        maxFilterChoices: 100,
+                        enableCaseSensitivity: false
+                    },
+                    allowPaging: true,
+                    pageSettings: { pageSize: 10, printMode: ej.Grid.PrintMode.CurrentPage },
+                    columns: [
+                        { field: "ShipmentId", headerText: 'Shipment', isPrimaryKey: true, isIdentity: true, visible: false },
+                        { field: "ShipmentName", headerText: 'Shipment / DO#', allowEditing: false },
+                        { field: "IsFullShipment", headerText: 'Full Shipment', allowEditing: false, type: "boolean", editType: "booleanedit", defaultValue: true },
+                        { field: "SalesOrderId", headerText: 'SO#', foreignKeyField: "SalesOrderId", foreignKeyValue: "SalesOrderName", dataSource: dataManagerSalesOrder, validationRules: { required: true } },
+                        { field: "ShipmentDate", headerText: 'Shipment Date', editType: "datepicker", format: "{0:MM/dd/yyyy}", validationRules: { required: true } },
+                        { field: "ShipmentTypeId", headerText: 'Shipment Type', foreignKeyField: "ShipmentTypeId", foreignKeyValue: "ShipmentTypeName", dataSource: dataManagerShipmentType },
+                        { field: "WarehouseId", headerText: 'Warehouse', foreignKeyField: "WarehouseId", foreignKeyValue: "WarehouseName", dataSource: dataManagerWarehouse, validationRules: { required: true } },
+                    ],
+                    actionComplete: "complete",
+                });
+            });
+
+            
+        });
+
+        function complete(args) {
+            if (args.requestType == 'beginedit') {
+                $("#" + this._id + "_dialogEdit").ejDialog({ title: "Edit Record" });
+            }
+
+            if (args.requestType == 'beginedit' || args.requestType == 'add') {
+                var selected = $('#GridSalesOrderId').data('ejDropDownList');
+                var selectedValue = parseInt(selected.option('value'));
+                var selectedText = selected.option('text');
+                $.ajax({
+                    type: 'GET',
+                    url: '/api/SalesOrder/GetNotShippedYet',
+                    success: function (data) {
+                        if (args.requestType == 'beginedit') {
+                            data.push({ 'SalesOrderId': selectedValue, 'SalesOrderName': selectedText });
+                        }
+
+                        $("#GridSalesOrderId").ejDropDownList({
+                            dataSource: data,
+                            fields: { id: 'SalesOrderId', text: 'SalesOrderName', value: 'SalesOrderId' },
+                            value: selectedValue
+                        });
+                    }
+                });
+
+            }
+
+        }
+
+
+    </script>
+}
+

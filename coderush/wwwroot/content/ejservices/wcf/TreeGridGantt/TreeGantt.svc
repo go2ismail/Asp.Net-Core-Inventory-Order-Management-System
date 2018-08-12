@@ -1,0 +1,4 @@
+﻿
+
+<%@ ServiceHost Language="C#" Factory="System.ServiceModel.Activation.WebServiceHostFactory, System.ServiceModel.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Service="EJServices.Wcf.TreeGridGantt.TreeGantt" %>
+

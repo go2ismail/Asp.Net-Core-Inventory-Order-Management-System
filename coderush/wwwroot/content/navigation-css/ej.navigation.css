@@ -1,0 +1,35 @@
+﻿@font-face {
+        font-family: 'ej-xlfont';
+        src: url('../ejthemes/common-images/navigationdrawer/icons.eot');
+        src: url('../ejthemes/common-images/navigationdrawer/icons.eot') format('embedded-opentype'), url('../ejthemes/common-images/navigationdrawer/icons.woff') format('woff'),url('../ejthemes/common-images/navigationdrawer/icons.woff') format('woff'), url('../ejthemes/common-images/navigationdrawer/icons.ttf') format('truetype'), url('../ejthemes/common-images/navigationdrawer/icons.svg') format('svg');
+        font-weight: normal;
+        font-style: normal;
+    }
+.e-home:before {
+  font-family: "ej-xlfont";
+  content: "\e900";
+}
+.e-profile:before {
+  font-family: "ej-xlfont";
+  content: "\e901";
+}
+.e-people:before {
+  font-family: "ej-xlfont";
+  content: "\e902";
+}
+.e-photo:before {
+  font-family: "ej-xlfont";
+  content: "\e903";
+}
+.e-communities:before {
+  font-family: "ej-xlfont";
+  content: "\e904";
+}
+.e-location:before {
+  font-family: "ej-xlfont";
+  content: "\e905";
+}
+.e-home,.e-profile,.e-people, .e-photo, .e-communities, .e-location{
+   font-size:24px;
+   color:black;            
+}

@@ -1,0 +1,143 @@
+﻿
+@{
+    ViewData["Title"] = "Bill";
+}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title text-primary"><i class="fa fa-certificate"></i> @ViewData["Title"]</h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                            title="Collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div id="Grid"></div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+             
+            </div>
+            <!-- /.box-footer-->
+        </div>
+        <!-- /.box -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+@section Styles{
+
+}
+
+@section Scripts{
+
+    <script type="text/javascript">
+        $(function () {
+
+            var dataManager = ej.DataManager({
+                url: "/api/Bill",
+                adaptor: new ej.WebApiAdaptor(),
+                offline: true
+            });
+
+            var dataManagerGoodsReceivedNote = ej.DataManager({
+                url: "/api/GoodsReceivedNote",
+                adaptor: new ej.WebApiAdaptor()
+            });
+
+            var dataManagerBillType = ej.DataManager({
+                url: "/api/BillType",
+                adaptor: new ej.WebApiAdaptor()
+            });
+
+            dataManager.ready.done(function (e) { 
+                $("#Grid").ejGrid({
+                    dataSource: ej.DataManager({
+                        json: e.result,
+                        adaptor: new ej.remoteSaveAdaptor(),
+                        insertUrl: "/api/Bill/Insert",
+                        updateUrl: "/api/Bill/Update",
+                        removeUrl: "/api/Bill/Remove",
+                    }),
+                    toolbarSettings: {
+                        showToolbar: true,
+                        toolbarItems: ["add", "edit", "delete", "update", "cancel", "search", "printGrid"]
+                    },
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true,
+                        showDeleteConfirmDialog: true,
+                        editMode: "dialog"
+                    },
+                    isResponsive: true,
+                    enableResponsiveRow: true,
+                    allowSorting: true,
+                    allowSearching: true,
+                    allowFiltering: true,
+                    filterSettings: {
+                        filterType: "excel",
+                        maxFilterChoices: 100,
+                        enableCaseSensitivity: false
+                    },
+                    allowPaging: true,
+                    pageSettings: { pageSize: 10, printMode: ej.Grid.PrintMode.CurrentPage },
+                    columns: [
+                        { field: "BillId", headerText: 'Bill', isPrimaryKey: true, isIdentity: true, visible: false },
+                        { field: "BillName", headerText: 'Bill#', allowEditing: false },
+                        { field: "GoodsReceivedNoteId", headerText: 'GRN', foreignKeyField: "GoodsReceivedNoteId", foreignKeyValue: "GoodsReceivedNoteName", dataSource: dataManagerGoodsReceivedNote, validationRules: { required: true } },
+                        { field: "VendorDONumber", headerText: 'Vendor DO#' },
+                        { field: "VendorInvoiceNumber", headerText: 'Vendor Invoice#' },
+                        { field: "BillDate", headerText: 'Bill Date', editType: "datepicker", format: "{0:MM/dd/yyyy}", validationRules: { required: true }, validationRules: { required: true } },
+                        { field: "BillDueDate", headerText: 'Bill Due Date', editType: "datepicker", format: "{0:MM/dd/yyyy}", validationRules: { required: true }, validationRules: { required: true } },
+                        { field: "BillTypeId", headerText: 'Bill Type', foreignKeyField: "BillTypeId", foreignKeyValue: "BillTypeName", dataSource: dataManagerBillType },
+                    ],
+                    actionComplete: "complete",
+                });
+            });
+
+            
+        });
+
+        function complete(args) {
+            if (args.requestType == 'beginedit') {
+                $("#" + this._id + "_dialogEdit").ejDialog({ title: "Edit Record" });
+            }
+            if (args.requestType == 'beginedit' || args.requestType == 'add') {
+                var selected = $('#GridGoodsReceivedNoteId').data('ejDropDownList');
+                var selectedValue = parseInt(selected.option('value'));
+                var selectedText = selected.option('text');
+                $.ajax({
+                    type: 'GET',
+                    url: '/api/GoodsReceivedNote/GetNotBilledYet',
+                    success: function (data) {
+                        if (args.requestType == 'beginedit') {
+                            data.push({ 'GoodsReceivedNoteId': selectedValue, 'GoodsReceivedNoteName': selectedText });
+                        }
+
+                        $("#GridGoodsReceivedNoteId").ejDropDownList({
+                            dataSource: data,
+                            fields: { id: 'GoodsReceivedNoteId', text: 'GoodsReceivedNoteName', value: 'GoodsReceivedNoteId' },
+                            value: selectedValue
+                        });
+                    }
+                });
+
+            }
+        }
+
+
+    </script>
+}
+

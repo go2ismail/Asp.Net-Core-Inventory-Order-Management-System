@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="EJServices.Wcf.Pivotchart.Relational" CodeBehind="Relational.svc.cs" %>

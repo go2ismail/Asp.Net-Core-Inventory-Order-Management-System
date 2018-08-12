@@ -1,0 +1,6 @@
+var FontColor = [{ text: "White",value:"white" }, { text: "Black",value:"black" }, { text: "Goldenrod",value:"goldenrod" }, { text: "Indigo",value:"indigo" }, { text: "Chocolate",value:"chocolate" }, { text: "DarkGoldenRod",value:"darkgoldenrod" }, { text: "FireBrick",value:"firebrick" }, { text: "DarkRed",value:"darkred" }, { text: "Khaki",value:"khaki" }, { text: "LightCoral",value:"lightcoral" }, { text: "Moccasin",value:"moccasin" }, { text: "Teal",value:"teal" }];
+var FontFamily = [{text: "Arial",value:"Arial"},{text: "Aharoni",value:"Aharoni"},{text: "Bell MT",value:"Bell MT"},{text: "Fantasy",value:"Fantasy"},{text: "Times New Roman",value:"Times New Roman"},{text: "Segoe UI",value:"Segoe UI"},{text: "Verdona",value:"Verdona"}];
+var HorizontalAlignment = [{text:"Left",value:"left"},{text:"Center",value:"center"},{text:"Right",value:"right"}];
+var VerticalAlignment = [{text:"Top",value:"top"},{text:"Center",value:"center"},{text:"Bottom",value:"bottom"}];
+var Decoration = [{text:"Underline",value:"underline"},{text:"Overline",value:"overline"},{text:"Line-through",value:"line-through"},{text:"None",value:"none"}];
+var Wrapping = [{text:"NoWrap",value:"nowrap"},{text:"Wrap",value:"wrap"},{text:"WrapWithOverflow",value:"wrapwithoverflow"}];

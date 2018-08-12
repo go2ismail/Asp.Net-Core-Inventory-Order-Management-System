@@ -1,0 +1,35 @@
+@font-face {
+font-family: 'Outlook Icon';
+src:
+url('Fonts/Outlook Icon.ttf') format('truetype'),
+url('Fonts/Outlook Icon.woff') format('woff'),
+url('Fonts/Outlook Icon.eot') format('eot'),
+url('Fonts/Outlook Icon.svg?#Outlook Icon') format('svg');
+font-weight: normal;
+font-style: normal;
+}
+
+[class^="ej-icon-"], [class*=" ej-icon-"] {
+ font-family: 'Outlook Icon' !important;
+speak: none;
+font-size: 55px;
+font-style: normal;
+font-weight: normal;
+font-variant: normal;
+text-transform: none;
+line-height: 1;
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+}
+
+.ej-icon-message-mail-wf:before { content: "\e700"; }
+.ej-icon-add:before { content: "\e701"; }
+.ej-icon-trash-can1-wf:before { content: "\e702"; }
+.ej-icon-archive02-wf:before { content: "\e703"; }
+.ej-icon-search:before { content: "\e704"; }
+.ej-icon-settings-01:before { content: "\e705"; }
+.ej-icon-bell-new:before { content: "\e706"; }
+.ej-icon-view-small-icons-01:before { content: "\e707"; }
+.ej-icon-up-arrow---01:before { content: "\e708"; }
+.ej-icon-expander-down---01:before { content: "\e709"; }
+.ej-icon-attachment-02-wf:before { content: "\e70a"; }

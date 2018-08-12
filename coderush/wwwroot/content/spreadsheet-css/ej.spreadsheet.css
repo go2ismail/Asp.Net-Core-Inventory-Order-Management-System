@@ -1,0 +1,10 @@
+body, html, .content-container-fluid, .row, .cols-sample-area {
+	height: 100%;
+}
+.row, .row  .cols-sample-area {
+	overflow: hidden;
+}
+.e-container-spreadsheet {
+		height: 100%;
+		width: 100%;
+}

@@ -1,0 +1,227 @@
+﻿
+@{
+    ViewData["Title"] = "Change Role";
+}
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title text-primary"><i class="fa fa-users"></i> @ViewData["Title"]</h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                            title="Collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div id="Grid"></div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+
+            </div>
+            <!-- /.box-footer-->
+        </div>
+        <!-- /.box -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<script id="templateForm" type="text/template">
+    <input hidden id="UserProfileId" name="UserProfileId" value="{{:UserProfileId}}" />
+    <input hidden id="ApplicationUserId" name="ApplicationUserId" value="{{:ApplicationUserId}}" />
+    <table cellspacing="10">
+        <tr>
+            <td>
+                Email
+            </td>
+            <td colspan="3">
+                <input id="Email" name="Email" value="{{:Email}}" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                First Name
+            </td>
+            <td>
+                <input id="FirstName" name="FirstName" value="{{:FirstName}}" />
+            </td>
+            <td>
+                Last Name
+            </td>
+            <td>
+                <input id="LastName" name="LastName" value="{{:LastName}}" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <div id="waitingPopup"></div>
+                <div id="GridRole"></div>
+            </td>
+        </tr>
+    </table>
+</script>
+
+
+@section Styles{
+
+}
+
+@section Scripts{
+
+    <script type="text/javascript">
+        $(function () {
+
+            var dataManager = ej.DataManager({
+                url: "/api/User",
+                adaptor: new ej.WebApiAdaptor(),
+                offline: true
+            });
+
+            dataManager.ready.done(function (e) {
+                $("#Grid").ejGrid({
+                    dataSource: ej.DataManager({
+                        json: e.result,
+                        adaptor: new ej.remoteSaveAdaptor(),
+                        updateUrl: "/api/User/ChangeRole"
+                    }),
+                    toolbarSettings: {
+                        showToolbar: true,
+                        toolbarItems: ["edit", "update", "cancel", "search", "printGrid"]
+                    },
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: false,
+                        allowDeleting: false,
+                        showDeleteConfirmDialog: true,
+                        editMode: "dialogtemplate",
+                        dialogEditorTemplateID: "#templateForm",
+                    },
+                    isResponsive: true,
+                    enableResponsiveRow: true,
+                    allowSorting: true,
+                    allowSearching: true,
+                    allowFiltering: true,
+                    filterSettings: {
+                        filterType: "excel",
+                        maxFilterChoices: 100,
+                        enableCaseSensitivity: false
+                    },
+                    allowPaging: true,
+                    pageSettings: { pageSize: 10, printMode: ej.Grid.PrintMode.CurrentPage },
+                    columns: [
+                        { field: "UserProfileId", headerText: 'Id', isPrimaryKey: true, isIdentity: true, visible: false },
+                        { field: "Email", headerText: 'Email', validationRules: { required: true } },
+                        { field: "FirstName", headerText: 'First Name', validationRules: { required: true } },
+                        { field: "LastName", headerText: 'Last Name', validationRules: { required: false } },
+                    ],
+                    actionComplete: "complete",
+                });
+            });
+
+
+
+        });
+
+        function loadRoleByApplicationUserId() {
+            renderWaiting();
+
+            var applicationUserId = $("#ApplicationUserId").val();
+
+            var dataManagerRole = ej.DataManager({
+                url: "/api/Role/GetRoleByApplicationUserId/" + applicationUserId,
+                adaptor: new ej.WebApiAdaptor(),
+                offline: true
+            });
+
+            dataManagerRole.ready.done(function (e) { 
+                $("#GridRole").ejGrid({
+                    dataSource: ej.DataManager({
+                        json: e.result,
+                        adaptor: new ej.remoteSaveAdaptor(),
+                        updateUrl: "/api/Role/UpdateUserRole"
+                    }),
+                    toolbarSettings: {
+                        showToolbar: true,
+                        toolbarItems: ["edit", "update", "cancel", "search"]
+                    },
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: false,
+                        allowDeleting: false,
+                    },
+                    isResponsive: true,
+                    enableResponsiveRow: true,
+                    allowSorting: true,
+                    allowSearching: true,
+                    allowFiltering: false,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 10 },
+                    columns: [
+                        { field: "CounterId", headerText: 'Id', isPrimaryKey: true, visible: false },
+                        { field: "ApplicationUserId", headerText: 'Application UserId', visible: false },
+                        { field: "RoleName", headerText: 'Role Name', allowEditing: false },
+                        { field: "IsHaveAccess", headerText: 'Is Have Access', type: "boolean", editType: "booleanedit" },
+                    ],
+                    actionBegin: "gridRoleBegin"
+                });
+            });
+        }
+
+        function gridRoleBegin(args) {
+            hideWaiting();
+        }
+
+
+        function complete(args) {
+
+            $("#Email").ejMaskEdit({
+                inputMode: 'Text',
+            });
+            $("#FirstName").ejMaskEdit({
+                inputMode: 'Text',
+            });
+            $("#LastName").ejMaskEdit({
+                inputMode: 'Text',
+            });
+
+            if (args.requestType == 'beginedit') {
+                $("#" + this._id + "_dialogEdit").ejDialog({ title: "Edit Role" });
+                $("#Email").ejMaskEdit("disable");
+                $("#FirstName").ejMaskEdit("disable");
+                $("#LastName").ejMaskEdit("disable");
+
+                loadRoleByApplicationUserId();
+            }
+
+            if (args.requestType == "save") {
+                this.refreshContent();
+            }
+
+        }
+
+        function renderWaiting() {
+            $("#waitingPopup").ejWaitingPopup({
+                showOnInit: true,
+                target: "#GridRole"
+            });
+        }
+
+        function hideWaiting() {
+            var obj = $("#waitingPopup").data("ejWaitingPopup");
+            obj.hide();
+        }
+
+
+    </script>
+}

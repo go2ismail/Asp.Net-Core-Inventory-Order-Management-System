@@ -1,0 +1,375 @@
+﻿@model coderush.Models.ApplicationUser
+@inject coderush.Data.ApplicationDbContext Context
+@{
+    ViewData["Title"] = "User Profile";
+    UserProfile profile = Context.UserProfile.SingleOrDefault(x => x.ApplicationUserId.Equals(Model.Id));
+}
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title text-primary"><i class="fa fa-users"></i> @ViewData["Title"]</h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                            title="Collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <img id="profilePicture" class="profile-user-img img-responsive img-circle" src="@profile.ProfilePicture" alt="User profile picture">
+                            </div>
+                        </div>
+                     
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="cols-sample-area">
+                                    <div class="frame">
+                                        <div class="control">
+                                            <div id="UploadDefault"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="form-group">
+                            <div class="col-lg-3">Email</div>
+                            <div class="col-lg-9"><input class="form-control" value="@profile.Email" disabled/></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-lg-3">First Name</div>
+                            <div class="col-lg-9"><input class="form-control" value="@profile.FirstName" disabled /></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-lg-3">Last Name</div>
+                            <div class="col-lg-9"><input class="form-control" value="@profile.LastName" disabled /></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+
+            </div>
+            <!-- /.box-footer-->
+        </div>
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title text-primary"><i class="fa fa-user"></i> Edit Profile </h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                            title="Collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div id="Grid"></div>
+            </div>
+        </div>
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title text-primary"><i class="fa fa-key"></i> Change Password </h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                            title="Collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div id="GridPassword"></div>
+            </div>
+        </div>
+        <!-- /.box -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<script id="templateForm" type="text/template">
+    <input hidden id="UserProfileId" name="UserProfileId" value="{{:UserProfileId}}" />
+    <input hidden id="ApplicationUserId" name="ApplicationUserId" value="{{:ApplicationUserId}}" />
+    <table cellspacing="10">
+        <tr>
+            <td>
+                Email
+            </td>
+            <td colspan="3">
+                <input id="EmailPassword" name="EmailPassword" value="{{:Email}}" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                First Name
+            </td>
+            <td>
+                <input id="FirstNamePassword" name="FirstNamePassword" value="{{:FirstName}}" />
+            </td>
+            <td>
+                Last Name
+            </td>
+            <td>
+                <input id="LastNamePassword" name="LastNamePassword" value="{{:LastName}}" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Old Password
+            </td>
+            <td>
+                <input id="OldPassword" name="OldPassword" value="" />
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                New Password
+            </td>
+            <td>
+                <input id="Password" name="Password" value="" />
+            </td>
+            <td>
+                Re-type Password
+            </td>
+            <td>
+                <input id="ConfirmPassword" name="ConfirmPassword" value="" />
+            </td>
+        </tr>
+    </table>
+</script>
+<script id="templateEditForm" type="text/template">
+    <input hidden id="UserProfileId" name="UserProfileId" value="{{:UserProfileId}}" />
+    <input hidden id="ApplicationUserId" name="ApplicationUserId" value="{{:ApplicationUserId}}" />
+    <table cellspacing="10">
+        <tr>
+            <td>
+                Email
+            </td>
+            <td colspan="3">
+                <input id="Email" name="Email" value="{{:Email}}" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                First Name
+            </td>
+            <td>
+                <input id="FirstName" name="FirstName" value="{{:FirstName}}" />
+            </td>
+            <td>
+                Last Name
+            </td>
+            <td>
+                <input id="LastName" name="LastName" value="{{:LastName}}" />
+            </td>
+        </tr>
+    </table>
+</script>
+
+@section Styles{
+
+}
+
+@section Scripts{
+
+    <script type="text/javascript">
+        $(function () {
+
+            $("#UploadDefault").ejUploadbox({
+                saveUrl: "/api/UploadProfilePicture",
+                allowDragAndDrop: true,
+                multipleFilesSelection: false,
+                success: "uploadSuccess",
+                autoUpload: true,
+            });
+
+            var dataManager = ej.DataManager({
+                url: "/api/User/GetByApplicationUserId/@Model.Id",
+                adaptor: new ej.WebApiAdaptor(),
+                offline: true
+            });
+
+            dataManager.ready.done(function (e) {
+                renderGridProfile(e);
+                renderGridChangePassword(e);
+            });
+
+
+
+        });
+
+        function renderGridProfile(e) {
+            $("#Grid").ejGrid({
+                dataSource: ej.DataManager({
+                    json: e.result,
+                    adaptor: new ej.remoteSaveAdaptor(),
+                    updateUrl: "/api/User/Update"
+                }),
+                toolbarSettings: {
+                    showToolbar: true,
+                    toolbarItems: ["edit", "update", "cancel"]
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    showDeleteConfirmDialog: true,
+                    editMode: "dialogtemplate",
+                    dialogEditorTemplateID: "#templateEditForm",
+                },
+                isResponsive: true,
+                enableResponsiveRow: true,
+                allowSorting: false,
+                allowSearching: false,
+                allowFiltering: false,
+                filterSettings: {
+                    filterType: "excel",
+                    maxFilterChoices: 100,
+                    enableCaseSensitivity: false
+                },
+                allowPaging: false,
+                pageSettings: { pageSize: 10 },
+                columns: [
+                    { field: "UserProfileId", headerText: 'Id', isPrimaryKey: true, isIdentity: true, visible: false },
+                    { field: "Email", headerText: 'Email', validationRules: { required: true } },
+                    { field: "FirstName", headerText: 'First Name', validationRules: { required: true } },
+                    { field: "LastName", headerText: 'Last Name', validationRules: { required: false } },
+                ],
+                actionComplete: "complete",
+            });
+        }
+
+        function renderGridChangePassword(e) {
+            $("#GridPassword").ejGrid({
+                dataSource: ej.DataManager({
+                    json: e.result,
+                    adaptor: new ej.remoteSaveAdaptor(),
+                    updateUrl: "/api/User/ChangePassword"
+                }),
+                toolbarSettings: {
+                    showToolbar: true,
+                    toolbarItems: ["edit", "update", "cancel"]
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    showDeleteConfirmDialog: true,
+                    editMode: "dialogtemplate",
+                    dialogEditorTemplateID: "#templateForm",
+                },
+                isResponsive: true,
+                enableResponsiveRow: true,
+                allowSorting: false,
+                allowSearching: false,
+                allowFiltering: false,
+                filterSettings: {
+                    filterType: "excel",
+                    maxFilterChoices: 100,
+                    enableCaseSensitivity: false
+                },
+                allowPaging: false,
+                pageSettings: { pageSize: 10 },
+                columns: [
+                    { field: "UserProfileId", headerText: 'Id', isPrimaryKey: true, isIdentity: true, visible: false },
+                    { field: "Email", headerText: 'Email', validationRules: { required: true } },
+                    { field: "FirstName", headerText: 'First Name', validationRules: { required: true } },
+                    { field: "LastName", headerText: 'Last Name', validationRules: { required: false } },
+                ],
+                actionComplete: "completeGridPassword",
+            });
+        }
+
+
+        function complete(args) {
+
+            $("#Email").ejMaskEdit({
+                inputMode: 'Text',
+            });
+            $("#FirstName").ejMaskEdit({
+                inputMode: 'Text',
+            });
+            $("#LastName").ejMaskEdit({
+                inputMode: 'Text',
+            });
+
+            if (args.requestType == 'beginedit') {
+                $("#" + this._id + "_dialogEdit").ejDialog({ title: "Edit Profile" });
+                $("#Email").ejMaskEdit("disable");
+            }
+
+            if (args.requestType == "save") {
+                this.refreshContent();
+            }
+
+        }
+
+        function completeGridPassword(args) {
+
+            $("#EmailPassword").ejMaskEdit({
+                inputMode: 'Text',
+            });
+            $("#FirstNamePassword").ejMaskEdit({
+                inputMode: 'Text',
+            });
+            $("#LastNamePassword").ejMaskEdit({
+                inputMode: 'Text',
+            });
+            $("#OldPassword").ejMaskEdit({
+                inputMode: 'Password',
+                validationRules: { required: true },
+            });
+            $("#Password").ejMaskEdit({
+                inputMode: 'Password',
+                validationRules: { required: true },
+            });
+            $("#ConfirmPassword").ejMaskEdit({
+                inputMode: 'Password',
+                validationRules: { required: true },
+            });
+
+            if (args.requestType == 'beginedit') {
+                $("#" + this._id + "_dialogEdit").ejDialog({ title: "Edit Password" });
+                $("#EmailPassword").ejMaskEdit("disable");
+                $("#FirstNamePassword").ejMaskEdit("disable");
+                $("#LastNamePassword").ejMaskEdit("disable");
+            }
+
+            if (args.requestType == "save") {
+                this.refreshContent();
+            }
+
+        }
+
+        function uploadSuccess(e) {
+            var resText = JSON.parse(e.responseText);
+            $('.profilePicture').attr('src', '../upload/' + resText);
+            $('#profilePicture').attr('src', '../upload/' + resText);
+            $('.img-circle').attr('src', '../upload/' + resText);
+        }
+
+
+    </script>
+}
