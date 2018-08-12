@@ -39,7 +39,7 @@ Project example Asp.Net Core Mvc implementation of inventory order management sy
   - Purchase Order
   - Goods Received Note
   - Bill
- -- Payment Voucher
+  - Payment Voucher
 - Inventory
   - Product
   - Product Type
