@@ -25,39 +25,39 @@ Project example Asp.Net Core Mvc implementation of inventory order management sy
 
 - Dashboard / Chart Example
 - Sales
--- Customer Type
--- Customer
--- Sales Type
--- Sales Order
--- Shipment
--- Invoice
--- Payment Receive
+  - Customer Type
+  - Customer
+  - Sales Type
+  - Sales Order
+  - Shipment
+  - Invoice
+  - Payment Receive
 - Purchase
--- Vendor Type
--- Vendor
--- Purchase Type
--- Purchase Order
--- Goods Received Note
--- Bill
--- Payment Voucher
+  - Vendor Type
+  - Vendor
+  - Purchase Type
+  - Purchase Order
+  - Goods Received Note
+  - Bill
+ -- Payment Voucher
 - Inventory
--- Product
--- Product Type
--- Unit of Measure
+  - Product
+  - Product Type
+  - Unit of Measure
 - Config
--- Currency
--- Branch
--- Warehouse
--- Cash Bank
--- Payment Type
--- Shipment Type
--- Invoice Type
--- Bill Type
+  - Currency
+  - Branch
+  - Warehouse
+  - Cash Bank
+  - Payment Type
+  - Shipment Type
+  - Invoice Type
+  - Bill Type
 - User & Role
--- User
--- Change Password
--- Role
--- Change Role
+  - User
+  - Change Password
+  - Role
+  - Change Role
 
 
 # Development Tools & Environment
