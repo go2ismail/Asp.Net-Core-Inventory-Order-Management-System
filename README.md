@@ -1,9 +1,5 @@
-# Asp.Net-Core-Inventory-Order-Management-System
-Project example Asp.Net Core Mvc implementation of inventory order management system. warehouse, product, vendor, customer, purchase order, sales order, shipment, goods receive and more.
-
-
-![inventory](coderush/wwwroot/images/scm6.png)
-![inventory](coderush/wwwroot/images/scm7.png)
+# Asp.Net-Core-Stock-Management-System
+Asp.Net Core ile geliştirilen bir stok yönetim uygulamasıdır.
 
 
 # Features
@@ -62,13 +58,8 @@ Project example Asp.Net Core Mvc implementation of inventory order management sy
 
 # Development Tools & Environment
 
-- **Visual Studio 2017 (Community Edition)**. (https://visualstudio.microsoft.com/) 
+- **Visual Studio 2017 (Community Edition)**. (https://visualstudio.microsoft.com/)
 - **Syncfusion JQuery Controls EJ1 (Community Edition)**. (https://www.syncfusion.com/products/communitylicense)
-
-
-
-# Supported by CodeRush.Co
-[CodeRush.CO] source code collections (https://coderush.co). 50% Off All Products, Use Discount Code **GITHUB50**
 
 
 
