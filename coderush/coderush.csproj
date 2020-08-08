@@ -19,6 +19,8 @@
    </PackageReference>
    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.3" />
    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.6" />
+   <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.4" />
+   <PackageReference Include="NpgSql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.1" />
    <PackageReference Include="Sendgrid" Version="9.9.0" />
   </ItemGroup>
 
