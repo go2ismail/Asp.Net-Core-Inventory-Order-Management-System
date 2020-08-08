@@ -24,8 +24,12 @@ namespace coderush
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // services.AddDbContext<ApplicationDbContext>(options =>
+            //     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnectionMsSql")));
+
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(Configuration.GetConnectionString("DefaultConnectionPostgres")));
+
 
             // Get Identity Default Options
             IConfigurationSection identityDefaultOptionsConfigurationSection = Configuration.GetSection("IdentityDefaultOptions");
@@ -63,7 +67,7 @@ namespace coderush
             {
                 // Cookie settings
                 options.Cookie.HttpOnly = identityDefaultOptions.CookieHttpOnly;
-                options.Cookie.Expiration = TimeSpan.FromDays(identityDefaultOptions.CookieExpiration);
+                options.ExpireTimeSpan =  TimeSpan.FromDays(identityDefaultOptions.CookieExpiration);
                 options.LoginPath = identityDefaultOptions.LoginPath; // If the LoginPath is not set here, ASP.NET Core will default to /Account/Login
                 options.LogoutPath = identityDefaultOptions.LogoutPath; // If the LogoutPath is not set here, ASP.NET Core will default to /Account/Logout
                 options.AccessDeniedPath = identityDefaultOptions.AccessDeniedPath; // If the AccessDeniedPath is not set here, ASP.NET Core will default to /Account/AccessDenied
@@ -88,6 +92,11 @@ namespace coderush
 
             services.AddTransient<IFunctional, Functional>();
 
+            // 'Endpoint Routing does not support 'IApplicationBuilder.UseMvc(...)'. hatasını gidermek için eklendi
+            services.AddControllers(options => options.EnableEndpointRouting = false);
+
+
+
             services.AddControllers()
             .AddNewtonsoftJson(options =>
             {
@@ -96,6 +105,8 @@ namespace coderush
                 options.SerializerSettings.ContractResolver = new DefaultContractResolver();
 
             });
+
+            services.AddControllersWithViews();
 
 
         }

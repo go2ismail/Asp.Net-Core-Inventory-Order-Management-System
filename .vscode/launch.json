@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/coderush/bin/Debug/netcoreapp2.0/coderush.dll",
+            "program": "${workspaceFolder}/coderush/bin/Debug/netcoreapp3.0/coderush.dll",
             "args": [],
             "cwd": "${workspaceFolder}/coderush",
             "stopAtEntry": false,
