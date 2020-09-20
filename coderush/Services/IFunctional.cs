@@ -32,7 +32,7 @@ namespace coderush.Services
             int smtpPort,
             bool smtpSSL);
 
-        Task<string> UploadFile(List<IFormFile> files, IHostingEnvironment env, string uploadFolder);
+        Task<string> UploadFile(List<IFormFile> files, IWebHostEnvironment env, string uploadFolder);
 
     }
 }

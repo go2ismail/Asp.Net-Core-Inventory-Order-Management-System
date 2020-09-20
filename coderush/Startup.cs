@@ -12,6 +12,9 @@ using coderush.Data;
 using coderush.Models;
 using coderush.Services;
 using Newtonsoft.Json.Serialization;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing.Template;
 
 namespace coderush
 {
@@ -27,6 +30,7 @@ namespace coderush
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllersWithViews();
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -66,7 +70,7 @@ namespace coderush
             {
                 // Cookie settings
                 options.Cookie.HttpOnly = identityDefaultOptions.CookieHttpOnly;
-                options.Cookie.Expiration = TimeSpan.FromDays(identityDefaultOptions.CookieExpiration);
+                options.ExpireTimeSpan = TimeSpan.FromDays(identityDefaultOptions.CookieExpiration);
                 options.LoginPath = identityDefaultOptions.LoginPath; // If the LoginPath is not set here, ASP.NET Core will default to /Account/Login
                 options.LogoutPath = identityDefaultOptions.LogoutPath; // If the LogoutPath is not set here, ASP.NET Core will default to /Account/Logout
                 options.AccessDeniedPath = identityDefaultOptions.AccessDeniedPath; // If the AccessDeniedPath is not set here, ASP.NET Core will default to /Account/AccessDenied
@@ -90,21 +94,19 @@ namespace coderush
             services.AddTransient<IRoles, Roles>();
 
             services.AddTransient<IFunctional, Functional>();
-            
+
             services.AddMvc()
-            .AddJsonOptions(options =>
+            .AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 //pascal case json
                 options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                
+
             });
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -119,13 +121,17 @@ namespace coderush
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseMvc(routes =>
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+
+
+            // The equivalent of 'app.UseMvc()'
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=UserRole}/{action=UserProfile}/{id?}");
+                endpoints.MapControllerRoute("default", "{controller=UserRole}/{action=UserProfile}/{id?}");
             });
         }
     }
