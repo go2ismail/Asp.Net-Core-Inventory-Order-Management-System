@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+  coderush:
+    image: ${DOCKER_REGISTRY-}coderush
+    build:
+      context: .
+      dockerfile: coderush/Dockerfile
+    expose:
+          - "3100" 
+    ports:
+          - "3100:80" 
+  inventoryDb:
+        image: postgres:latest
+        environment:
+            POSTGRES_DB: inventoryDatabase
+            POSTGRES_PASSWORD: adminPassword
+            POSTGRES_USER: admin
+        expose:
+            - "5433"
+        ports:
+            - "5464:5432"
+        volumes:
+            - db_postgreData:/var/postgre
+volumes:
+        db_postgreData: {}
