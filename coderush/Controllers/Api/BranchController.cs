@@ -1,15 +1,12 @@
-﻿using System;
+﻿using coderush.Data;
+using coderush.Models;
+using coderush.Models.SyncfusionViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using coderush.Data;
-using coderush.Models;
-using coderush.Models.SyncfusionViewModels;
-using coderush.Services;
-using Microsoft.AspNetCore.Authorization;
 
 namespace coderush.Controllers.Api
 {
@@ -24,7 +21,7 @@ namespace coderush.Controllers.Api
         {
             _context = context;
         }
-        
+
 
         [HttpGet]
         public async Task<IActionResult> GetBranch()
@@ -35,7 +32,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Insert([FromBody]CrudViewModel<Branch> payload)
+        public IActionResult Insert([FromBody] CrudViewModel<Branch> payload)
         {
             Branch branch = payload.value;
             _context.Branch.Add(branch);
@@ -44,7 +41,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Update([FromBody]CrudViewModel<Branch> payload)
+        public IActionResult Update([FromBody] CrudViewModel<Branch> payload)
         {
             Branch branch = payload.value;
             _context.Branch.Update(branch);
@@ -53,7 +50,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Remove([FromBody]CrudViewModel<Branch> payload)
+        public IActionResult Remove([FromBody] CrudViewModel<Branch> payload)
         {
             Branch branch = _context.Branch
                 .Where(x => x.BranchId == (int)payload.key)
@@ -63,6 +60,6 @@ namespace coderush.Controllers.Api
             return Ok(branch);
 
         }
-        
+
     }
 }

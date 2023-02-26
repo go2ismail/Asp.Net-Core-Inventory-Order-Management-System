@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace coderush.Services
@@ -13,11 +11,11 @@ namespace coderush.Services
 
         Task CreateDefaultSuperAdmin();
 
-        Task SendEmailBySendGridAsync(string apiKey, 
-            string fromEmail, 
-            string fromFullName, 
-            string subject, 
-            string message, 
+        Task SendEmailBySendGridAsync(string apiKey,
+            string fromEmail,
+            string fromFullName,
+            string subject,
+            string message,
             string email);
 
         Task SendEmailByGmailAsync(string fromEmail,

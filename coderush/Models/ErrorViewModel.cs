@@ -1,5 +1,3 @@
-using System;
-
 namespace coderush.Models
 {
     public class ErrorViewModel

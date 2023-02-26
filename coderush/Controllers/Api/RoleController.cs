@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using coderush.Data;
+﻿using coderush.Data;
 using coderush.Models;
 using coderush.Models.AccountViewModels;
 using coderush.Models.SyncfusionViewModels;
 using coderush.Services;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace coderush.Controllers.Api
 {
@@ -49,7 +47,7 @@ namespace coderush.Controllers.Api
 
         // GET: api/Role
         [HttpGet("[action]/{id}")]
-        public async Task<IActionResult> GetRoleByApplicationUserId([FromRoute]string id)
+        public async Task<IActionResult> GetRoleByApplicationUserId([FromRoute] string id)
         {
             await _roles.GenerateRolesFromPagesAsync();
             var user = await _userManager.FindByIdAsync(id);
@@ -62,13 +60,13 @@ namespace coderush.Controllers.Api
                 Items.Add(new UserRoleViewModel { CounterId = count, ApplicationUserId = id, RoleName = item.Name, IsHaveAccess = isInRole });
                 count++;
             }
-            
+
             int Count = Items.Count();
             return Ok(new { Items, Count });
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> UpdateUserRole([FromBody]CrudViewModel<UserRoleViewModel> payload)
+        public async Task<IActionResult> UpdateUserRole([FromBody] CrudViewModel<UserRoleViewModel> payload)
         {
             UserRoleViewModel userRole = payload.value;
             if (userRole != null)

@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using coderush.Data;
+﻿using coderush.Data;
 using coderush.Models;
 using coderush.Models.SyncfusionViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace coderush.Controllers.Api
 {
@@ -36,7 +34,7 @@ namespace coderush.Controllers.Api
 
 
         [HttpPost("[action]")]
-        public IActionResult Insert([FromBody]CrudViewModel<Product> payload)
+        public IActionResult Insert([FromBody] CrudViewModel<Product> payload)
         {
             Product product = payload.value;
             _context.Product.Add(product);
@@ -45,7 +43,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Update([FromBody]CrudViewModel<Product> payload)
+        public IActionResult Update([FromBody] CrudViewModel<Product> payload)
         {
             Product product = payload.value;
             _context.Product.Update(product);
@@ -54,7 +52,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Remove([FromBody]CrudViewModel<Product> payload)
+        public IActionResult Remove([FromBody] CrudViewModel<Product> payload)
         {
             Product product = _context.Product
                 .Where(x => x.ProductId == (int)payload.key)

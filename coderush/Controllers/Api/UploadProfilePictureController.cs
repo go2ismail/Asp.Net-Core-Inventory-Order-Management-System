@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using coderush.Data;
+using coderush.Models;
+using coderush.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using coderush.Data;
-using coderush.Models;
-using coderush.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace coderush.Controllers.Api
 {
@@ -42,7 +42,7 @@ namespace coderush.Controllers.Api
             {
                 var folderUpload = "upload";
                 var fileName = await _functionalService.UploadFile(UploadDefault, _env, folderUpload);
-                
+
                 ApplicationUser appUser = await _userManager.GetUserAsync(User);
                 if (appUser != null)
                 {

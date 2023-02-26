@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using coderush.Models;
+﻿using coderush.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace coderush.Controllers
 {
-    
+
     public class UserRoleController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;

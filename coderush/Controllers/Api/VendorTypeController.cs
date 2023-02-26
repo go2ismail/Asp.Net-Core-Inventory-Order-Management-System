@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using coderush.Data;
+﻿using coderush.Data;
 using coderush.Models;
 using coderush.Models.SyncfusionViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace coderush.Controllers.Api
 {
@@ -34,7 +32,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Insert([FromBody]CrudViewModel<VendorType> payload)
+        public IActionResult Insert([FromBody] CrudViewModel<VendorType> payload)
         {
             VendorType vendorType = payload.value;
             _context.VendorType.Add(vendorType);
@@ -43,7 +41,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Update([FromBody]CrudViewModel<VendorType> payload)
+        public IActionResult Update([FromBody] CrudViewModel<VendorType> payload)
         {
             VendorType vendorType = payload.value;
             _context.VendorType.Update(vendorType);
@@ -52,7 +50,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Remove([FromBody]CrudViewModel<VendorType> payload)
+        public IActionResult Remove([FromBody] CrudViewModel<VendorType> payload)
         {
             VendorType vendorType = _context.VendorType
                 .Where(x => x.VendorTypeId == (int)payload.key)
