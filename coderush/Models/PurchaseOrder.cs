@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace coderush.Models
 {
@@ -20,7 +18,7 @@ namespace coderush.Models
 
         [Display(Name = "Currency")]
         public int CurrencyId { get; set; }
-        
+
         [Display(Name = "Purchase Type")]
         public int PurchaseTypeId { get; set; }
         public string Remarks { get; set; }
@@ -31,7 +29,7 @@ namespace coderush.Models
         public double Freight { get; set; }
         public double Total { get; set; }
         public List<PurchaseOrderLine> PurchaseOrderLines { get; set; } = new List<PurchaseOrderLine>();
-        
+
 
     }
 }

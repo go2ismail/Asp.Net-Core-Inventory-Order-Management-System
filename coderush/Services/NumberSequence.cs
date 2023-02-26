@@ -1,9 +1,7 @@
 ﻿using coderush.Data;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace coderush.Services
 {
@@ -26,7 +24,7 @@ namespace coderush.Services
                 Models.NumberSequence numberSequence = _context.NumberSequence
                     .Where(x => x.Module.Equals(module))
                     .FirstOrDefault();
-                
+
                 if (numberSequence == null)
                 {
                     numberSequence = new Models.NumberSequence();

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using coderush.Data;
+﻿using coderush.Data;
 using coderush.Models;
 using coderush.Models.SyncfusionViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace coderush.Controllers.Api
 {
@@ -134,7 +133,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Insert([FromBody]CrudViewModel<SalesOrderLine> payload)
+        public IActionResult Insert([FromBody] CrudViewModel<SalesOrderLine> payload)
         {
             SalesOrderLine salesOrderLine = payload.value;
             salesOrderLine = this.Recalculate(salesOrderLine);
@@ -145,7 +144,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Update([FromBody]CrudViewModel<SalesOrderLine> payload)
+        public IActionResult Update([FromBody] CrudViewModel<SalesOrderLine> payload)
         {
             SalesOrderLine salesOrderLine = payload.value;
             salesOrderLine = this.Recalculate(salesOrderLine);
@@ -156,7 +155,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Remove([FromBody]CrudViewModel<SalesOrderLine> payload)
+        public IActionResult Remove([FromBody] CrudViewModel<SalesOrderLine> payload)
         {
             SalesOrderLine salesOrderLine = _context.SalesOrderLine
                 .Where(x => x.SalesOrderLineId == (int)payload.key)

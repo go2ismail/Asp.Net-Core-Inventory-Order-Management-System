@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using coderush.Data;
+﻿using coderush.Data;
 using coderush.Models;
 using coderush.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
+using System;
 
 namespace coderush
 {
@@ -90,14 +87,14 @@ namespace coderush
             services.AddTransient<IRoles, Roles>();
 
             services.AddTransient<IFunctional, Functional>();
-            
+
             services.AddMvc()
             .AddJsonOptions(options =>
             {
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 //pascal case json
                 options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                
+
             });
 
 

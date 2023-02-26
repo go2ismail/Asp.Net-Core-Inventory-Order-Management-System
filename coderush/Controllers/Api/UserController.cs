@@ -1,15 +1,12 @@
-﻿using System;
+﻿using coderush.Data;
+using coderush.Models;
+using coderush.Models.SyncfusionViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using coderush.Data;
-using coderush.Models;
-using coderush.Models.AccountViewModels;
-using coderush.Models.SyncfusionViewModels;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 
 namespace coderush.Controllers.Api
 {
@@ -42,7 +39,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpGet("[action]/{id}")]
-        public IActionResult GetByApplicationUserId([FromRoute]string id)
+        public IActionResult GetByApplicationUserId([FromRoute] string id)
         {
             UserProfile userProfile = _context.UserProfile.SingleOrDefault(x => x.ApplicationUserId.Equals(id));
             List<UserProfile> Items = new List<UserProfile>();
@@ -55,7 +52,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> Insert([FromBody]CrudViewModel<UserProfile> payload)
+        public async Task<IActionResult> Insert([FromBody] CrudViewModel<UserProfile> payload)
         {
             UserProfile register = payload.value;
             if (register.Password.Equals(register.ConfirmPassword))
@@ -70,13 +67,13 @@ namespace coderush.Controllers.Api
                     _context.UserProfile.Add(register);
                     await _context.SaveChangesAsync();
                 }
-                
+
             }
             return Ok(register);
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> Update([FromBody]CrudViewModel<UserProfile> payload)
+        public async Task<IActionResult> Update([FromBody] CrudViewModel<UserProfile> payload)
         {
             UserProfile profile = payload.value;
             _context.UserProfile.Update(profile);
@@ -85,7 +82,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> ChangePassword([FromBody]CrudViewModel<UserProfile> payload)
+        public async Task<IActionResult> ChangePassword([FromBody] CrudViewModel<UserProfile> payload)
         {
             UserProfile profile = payload.value;
             if (profile.Password.Equals(profile.ConfirmPassword))
@@ -96,16 +93,16 @@ namespace coderush.Controllers.Api
             profile = _context.UserProfile.SingleOrDefault(x => x.ApplicationUserId.Equals(profile.ApplicationUserId));
             return Ok(profile);
         }
-        
+
         [HttpPost("[action]")]
-        public IActionResult ChangeRole([FromBody]CrudViewModel<UserProfile> payload)
+        public IActionResult ChangeRole([FromBody] CrudViewModel<UserProfile> payload)
         {
             UserProfile profile = payload.value;
             return Ok(profile);
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> Remove([FromBody]CrudViewModel<UserProfile> payload)
+        public async Task<IActionResult> Remove([FromBody] CrudViewModel<UserProfile> payload)
         {
             var userProfile = _context.UserProfile.SingleOrDefault(x => x.UserProfileId.Equals((int)payload.key));
             if (userProfile != null)
@@ -117,13 +114,13 @@ namespace coderush.Controllers.Api
                     _context.Remove(userProfile);
                     await _context.SaveChangesAsync();
                 }
-                
+
             }
-            
+
             return Ok();
 
         }
-        
-        
+
+
     }
 }

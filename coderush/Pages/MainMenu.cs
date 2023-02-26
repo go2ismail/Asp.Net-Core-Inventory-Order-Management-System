@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace coderush.Pages
+﻿namespace coderush.Pages
 {
     public static class MainMenu
     {

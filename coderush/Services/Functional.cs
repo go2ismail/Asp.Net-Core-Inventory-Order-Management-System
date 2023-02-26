@@ -9,7 +9,6 @@ using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -40,13 +39,13 @@ namespace coderush.Services
             _superAdminDefaultOptions = superAdminDefaultOptions.Value;
         }
 
-      
+
 
         public async Task InitAppData()
         {
             try
             {
-               
+
                 await _context.BillType.AddAsync(new BillType { BillTypeName = "Default" });
                 await _context.SaveChangesAsync();
 
@@ -172,11 +171,11 @@ namespace coderush.Services
             }
         }
 
-        public async Task SendEmailBySendGridAsync(string apiKey, 
-            string fromEmail, 
-            string fromFullName, 
-            string subject, 
-            string message, 
+        public async Task SendEmailBySendGridAsync(string apiKey,
+            string fromEmail,
+            string fromFullName,
+            string subject,
+            string message,
             string email)
         {
             var client = new SendGridClient(apiKey);

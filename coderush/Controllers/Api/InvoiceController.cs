@@ -1,15 +1,14 @@
-﻿using System;
+﻿using coderush.Data;
+using coderush.Models;
+using coderush.Models.SyncfusionViewModels;
+using coderush.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using coderush.Data;
-using coderush.Models;
-using coderush.Services;
-using coderush.Models.SyncfusionViewModels;
-using Microsoft.AspNetCore.Authorization;
 
 namespace coderush.Controllers.Api
 {
@@ -65,7 +64,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Insert([FromBody]CrudViewModel<Invoice> payload)
+        public IActionResult Insert([FromBody] CrudViewModel<Invoice> payload)
         {
             Invoice invoice = payload.value;
             invoice.InvoiceName = _numberSequence.GetNumberSequence("INV");
@@ -75,7 +74,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Update([FromBody]CrudViewModel<Invoice> payload)
+        public IActionResult Update([FromBody] CrudViewModel<Invoice> payload)
         {
             Invoice invoice = payload.value;
             _context.Invoice.Update(invoice);
@@ -84,7 +83,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Remove([FromBody]CrudViewModel<Invoice> payload)
+        public IActionResult Remove([FromBody] CrudViewModel<Invoice> payload)
         {
             Invoice invoice = _context.Invoice
                 .Where(x => x.InvoiceId == (int)payload.key)

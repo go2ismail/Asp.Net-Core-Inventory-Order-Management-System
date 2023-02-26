@@ -1,15 +1,13 @@
-﻿using System;
+﻿using coderush.Data;
+using coderush.Models;
+using coderush.Models.SyncfusionViewModels;
+using coderush.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using coderush.Data;
-using coderush.Models;
-using coderush.Services;
-using coderush.Models.SyncfusionViewModels;
-using Microsoft.AspNetCore.Authorization;
 
 namespace coderush.Controllers.Api
 {
@@ -38,7 +36,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Insert([FromBody]CrudViewModel<PaymentReceive> payload)
+        public IActionResult Insert([FromBody] CrudViewModel<PaymentReceive> payload)
         {
             PaymentReceive paymentReceive = payload.value;
             paymentReceive.PaymentReceiveName = _numberSequence.GetNumberSequence("PAYRCV");
@@ -48,7 +46,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Update([FromBody]CrudViewModel<PaymentReceive> payload)
+        public IActionResult Update([FromBody] CrudViewModel<PaymentReceive> payload)
         {
             PaymentReceive paymentReceive = payload.value;
             _context.PaymentReceive.Update(paymentReceive);
@@ -57,7 +55,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Remove([FromBody]CrudViewModel<PaymentReceive> payload)
+        public IActionResult Remove([FromBody] CrudViewModel<PaymentReceive> payload)
         {
             PaymentReceive paymentReceive = _context.PaymentReceive
                 .Where(x => x.PaymentReceiveId == (int)payload.key)

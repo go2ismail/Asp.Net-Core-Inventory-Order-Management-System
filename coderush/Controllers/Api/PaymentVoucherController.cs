@@ -1,15 +1,13 @@
-﻿using System;
+﻿using coderush.Data;
+using coderush.Models;
+using coderush.Models.SyncfusionViewModels;
+using coderush.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using coderush.Data;
-using coderush.Models;
-using coderush.Services;
-using coderush.Models.SyncfusionViewModels;
-using Microsoft.AspNetCore.Authorization;
 
 namespace coderush.Controllers.Api
 {
@@ -40,7 +38,7 @@ namespace coderush.Controllers.Api
 
 
         [HttpPost("[action]")]
-        public IActionResult Insert([FromBody]CrudViewModel<PaymentVoucher> payload)
+        public IActionResult Insert([FromBody] CrudViewModel<PaymentVoucher> payload)
         {
             PaymentVoucher paymentVoucher = payload.value;
             paymentVoucher.PaymentVoucherName = _numberSequence.GetNumberSequence("PAYVCH");
@@ -50,7 +48,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Update([FromBody]CrudViewModel<PaymentVoucher> payload)
+        public IActionResult Update([FromBody] CrudViewModel<PaymentVoucher> payload)
         {
             PaymentVoucher paymentVoucher = payload.value;
             _context.PaymentVoucher.Update(paymentVoucher);
@@ -59,7 +57,7 @@ namespace coderush.Controllers.Api
         }
 
         [HttpPost("[action]")]
-        public IActionResult Remove([FromBody]CrudViewModel<PaymentVoucher> payload)
+        public IActionResult Remove([FromBody] CrudViewModel<PaymentVoucher> payload)
         {
             PaymentVoucher paymentVoucher = _context.PaymentVoucher
                 .Where(x => x.PaymentvoucherId == (int)payload.key)

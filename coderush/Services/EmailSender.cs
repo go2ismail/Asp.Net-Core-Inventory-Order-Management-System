@@ -1,7 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace coderush.Services
@@ -56,7 +53,7 @@ namespace coderush.Services
                                             .Wait();
             }
 
-            
+
             return Task.CompletedTask;
         }
     }
