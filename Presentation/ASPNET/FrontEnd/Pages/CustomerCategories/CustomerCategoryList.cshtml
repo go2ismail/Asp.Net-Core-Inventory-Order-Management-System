@@ -4,56 +4,57 @@
 }
 
 <div id="app" v-cloak>
-    <div class="row">
-        <div class="col-12">
-            <div class="grid-container">
-                <div ref="mainGridRef"></div>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary">Customer Categories</h2>
+            <button class="btn btn-gradient-primary shadow-sm" v-on:click="handler.openAddModal">
+                <i class="bi bi-plus-lg me-1"></i> Add New Category
+            </button>
+        </div>
+
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-0">
+                <div class="grid-container p-3">
+                    <div ref="mainGridRef"></div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Modern Modal -->
     <div class="modal fade" ref="mainModalRef" id="MainModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" v-text="state.mainTitle"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-gradient text-white py-3">
+                    <h5 class="modal-title fw-semibold" v-text="state.mainTitle"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <input type="hidden" v-model="state.id" id="Id" name="Id" />
+
+                <div class="modal-body p-4">
                     <form id="MainForm">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5>Main Info</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row mb-2">
-                                            <div class="col-md-6">
-                                                <label for="Name">Name</label>
-                                                <input ref="nameRef" v-model="state.name" />
-                                                <label class="text-danger" v-text="state.errors.name"></label>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="col-12">
-                                                <label for="Description">Description</label>
-                                                <textarea class="form-control" rows="3" v-model="state.description"></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="Name" class="form-label fw-semibold">Name</label>
+                                <input ref="nameRef" v-model="state.name" class="form-control rounded-3 shadow-sm" placeholder="Enter category name" />
+                                <div class="text-danger small mt-1" v-text="state.errors.name"></div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="Description" class="form-label fw-semibold">Description</label>
+                                <textarea class="form-control rounded-3 shadow-sm" rows="4" v-model="state.description" placeholder="Write a brief description..."></textarea>
                             </div>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                <div class="modal-footer border-0 px-4 pb-4 d-flex justify-content-end">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4" data-bs-dismiss="modal">
+                        Close
+                    </button>
                     <button type="button"
                             id="MainSaveButton"
-                            class="btn"
-                            v-bind:class="state.deleteMode ? 'btn-danger' : 'btn-primary'"
+                            class="btn rounded-3 px-4 ms-2"
+                            v-bind:class="state.deleteMode ? 'btn-danger' : 'btn-primary btn-gradient-primary'"
                             v-on:click="handler.handleSubmit"
                             v-bind:disabled="state.isSubmitting">
                         <span class="spinner-border spinner-border-sm me-2" v-if="state.isSubmitting" role="status" aria-hidden="true"></span>
@@ -65,6 +66,44 @@
         </div>
     </div>
 </div>
+
+@section styles {
+    <style>
+        body {
+            background-color: #f6f8fa;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+
+        .btn-gradient-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056d2 100%);
+            color: white !important;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-gradient-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .modal-header.bg-gradient {
+            background: linear-gradient(135deg, #0056d2 0%, #007bff 100%);
+        }
+
+        .card {
+            border-radius: 1rem !important;
+        }
+
+        input.form-control, textarea.form-control {
+            border: 1px solid #e0e6ed !important;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input.form-control:focus, textarea.form-control:focus {
+            border-color: #007bff !important;
+            box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+}
 
 @section scripts {
     <script src="~/FrontEnd/Pages/CustomerCategories/CustomerCategoryList.cshtml.js"></script>
