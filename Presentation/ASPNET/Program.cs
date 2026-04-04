@@ -28,6 +28,11 @@ app.UseRouting();
 app.UseCors();
 app.UseMiddleware<GlobalApiExceptionHandlerMiddleware>();
 app.UseAuthentication();
+
+// commented out app.MapStaticAssets();for now, as we don't have any
+// authorization in place yet. We can enable this once we have some
+// policies defined and roles set up.
+
 app.UseAuthorization();
 //app.MapStaticAssets();
 
