@@ -29,7 +29,7 @@ app.UseCors();
 app.UseMiddleware<GlobalApiExceptionHandlerMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapStaticAssets();
+//app.MapStaticAssets();
 
 app.MapFrontEndRoutes();
 app.MapBackEndRoutes();

@@ -13,8 +13,8 @@ public static class FrontEndConfiguration
 
     public static IEndpointRouteBuilder MapFrontEndRoutes(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapRazorPages()
-            .WithStaticAssets();
+        endpoints.MapRazorPages();
+          //  .WithStaticAssets();
         return endpoints;
     }
 }
