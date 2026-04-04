@@ -9,6 +9,9 @@ public abstract class BaseApiController : ControllerBase
 {
     protected readonly ISender _sender;
 
+
+    // Base API controller constructor that takes an ISender instance for handling requests.
+
     protected BaseApiController(ISender sender)
     {
         _sender = sender;
