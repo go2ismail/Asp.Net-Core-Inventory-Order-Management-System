@@ -1,2 +1,5 @@
 ﻿.vs/
 obj/
+.dotnet/
+core/domain/bin/
+core/application/bin

@@ -1,0 +1,1290 @@
+<h1>Bill of Materials (BOM) System - Technical Implementation Plan</h1>
+<h2>1. Executive Summary</h2>
+<p>This document outlines the technical implementation plan for adding a multi-level Bill of Materials (BOM) system to the INDOTALENT Warehouse Management System. The BOM system will enable the composition of finished goods from component parts, supporting manufacturing and assembly operations.</p>
+<h2>2. Current Architecture Overview</h2>
+<p>The system follows Clean Architecture principles with clear separation of concerns:</p>
+<ul>
+  <li>
+    <p><strong>Domain Layer</strong> - Contains entities, enums, and domain logic</p>
+  </li>
+  <li>
+    <p><strong>Application Layer</strong> - Contains CQRS commands/queries, validators, and services</p>
+  </li>
+  <li>
+    <p><strong>Infrastructure Layer</strong> - Contains EF Core configurations, repositories, and external services</p>
+  </li>
+  <li>
+    <p><strong>Presentation Layer</strong> - ASP.NET Core with Razor Pages frontend and API controllers</p>
+  </li>
+</ul>
+<h3>Key Patterns Used</h3>
+<ul>
+  <li>
+    <p>CQRS (Command Query Responsibility Segregation) with MediatR</p>
+  </li>
+  <li>
+    <p>Repository and Unit of Work patterns</p>
+  </li>
+  <li>
+    <p>Sequential GUID generation for entity IDs</p>
+  </li>
+  <li>
+    <p>Soft delete with IsDeleted flag</p>
+  </li>
+  <li>
+    <p>Audit tracking (CreatedBy, CreatedAt, UpdatedBy, UpdatedAt)</p>
+  </li>
+</ul>
+<h2>3. BOM System Requirements</h2>
+<h3>3.1 Functional Requirements</h3>
+<ul>
+  <li>
+    <p>Support multi-level BOMs (assemblies containing sub-assemblies)</p>
+  </li>
+  <li>
+    <p>Define parent-child product relationships with quantities</p>
+  </li>
+  <li>
+    <p>Track component costs and calculate rolled-up product costs</p>
+  </li>
+  <li>
+    <p>Support effectivity dates (valid from/to dates)</p>
+  </li>
+  <li>
+    <p>Enable versioning of BOM configurations</p>
+  </li>
+  <li>
+    <p>Validate circular references (prevent product from being its own component)</p>
+  </li>
+  <li>
+    <p>Support different unit of measures for components</p>
+  </li>
+  <li>
+    <p>Calculate material requirements for production orders</p>
+  </li>
+</ul>
+<h3>3.2 Technical Requirements</h3>
+<ul>
+  <li>
+    <p>Maintain existing architecture patterns</p>
+  </li>
+  <li>
+    <p>Ensure data integrity with proper constraints</p>
+  </li>
+  <li>
+    <p>Optimize for BOM explosion queries (recursive queries)</p>
+  </li>
+  <li>
+    <p>Support soft deletes and audit trails</p>
+  </li>
+  <li>
+    <p>Provide comprehensive validation</p>
+  </li>
+</ul>
+<h2>4. Database Design</h2>
+<h3>4.1 New Entity: BillOfMaterial</h3>
+<p>Core entity representing the BOM header/master record for each product that has a BOM.</p>
+<pre><code>public class BillOfMaterial : BaseEntity
+{
+    public string? ProductId { get; set; }  // Parent/Assembly Product
+    public Product? Product { get; set; }
+    public string? Name { get; set; }
+    public string? Version { get; set; }
+    public string? Description { get; set; }
+    public bool? IsActive { get; set; } = true;
+    public DateTime? EffectiveFrom { get; set; }
+    public DateTime? EffectiveTo { get; set; }
+    public ICollection<BillOfMaterialItem>? Items { get; set; }
+}
+</code></pre>
+<h3>4.2 New Entity: BillOfMaterialItem</h3>
+<p>Represents individual components in a BOM.</p>
+<pre><code>public class BillOfMaterialItem : BaseEntity
+{
+    public string? BillOfMaterialId { get; set; }
+    public BillOfMaterial? BillOfMaterial { get; set; }
+    public string? ComponentProductId { get; set; }  // Component/Part Product
+    public Product? ComponentProduct { get; set; }
+    public double? Quantity { get; set; } = 1;
+    public int? Sequence { get; set; }  // Order of assembly
+    public string? UnitMeasureId { get; set; }
+    public UnitMeasure? UnitMeasure { get; set; }
+    public double? ScrapPercentage { get; set; } = 0;
+    public string? Notes { get; set; }
+}
+</code></pre>
+<h3>4.3 Database Relationships</h3>
+<ul>
+  <li>
+    <p>BillOfMaterial → Product (Many-to-One): Each BOM belongs to one parent product</p>
+  </li>
+  <li>
+    <p>BillOfMaterial → BillOfMaterialItem (One-to-Many): Each BOM has multiple items</p>
+  </li>
+  <li>
+    <p>BillOfMaterialItem → Product (Many-to-One): Each item references a component product</p>
+  </li>
+  <li>
+    <p>BillOfMaterialItem → UnitMeasure (Many-to-One): Each item has a unit of measure</p>
+  </li>
+</ul>
+<h3>4.4 Indexes</h3>
+<ul>
+  <li>
+    <p>Index on BillOfMaterial.ProductId for fast lookup</p>
+  </li>
+  <li>
+    <p>Index on BillOfMaterial.IsActive for filtering active BOMs</p>
+  </li>
+  <li>
+    <p>Composite index on (ProductId, Version, IsActive)</p>
+  </li>
+  <li>
+    <p>Index on BillOfMaterialItem.BillOfMaterialId</p>
+  </li>
+  <li>
+    <p>Index on BillOfMaterialItem.ComponentProductId</p>
+  </li>
+</ul>
+<h2>5. Domain Layer Implementation</h2>
+<h3>5.1 New Files to Create</h3>
+<h4>Core/Domain/Entities/BillOfMaterial.cs</h4>
+<pre><code>using Domain.Common;
+
+namespace Domain.Entities;
+
+public class BillOfMaterial : BaseEntity
+{
+    public string? ProductId { get; set; }
+    public Product? Product { get; set; }
+    public string? Name { get; set; }
+    public string? Version { get; set; }
+    public string? Description { get; set; }
+    public bool? IsActive { get; set; } = true;
+    public DateTime? EffectiveFrom { get; set; }
+    public DateTime? EffectiveTo { get; set; }
+    public ICollection<BillOfMaterialItem>? Items { get; set; }
+}
+</code></pre>
+<h4>Core/Domain/Entities/BillOfMaterialItem.cs</h4>
+<pre><code>using Domain.Common;
+
+namespace Domain.Entities;
+
+public class BillOfMaterialItem : BaseEntity
+{
+    public string? BillOfMaterialId { get; set; }
+    public BillOfMaterial? BillOfMaterial { get; set; }
+    public string? ComponentProductId { get; set; }
+    public Product? ComponentProduct { get; set; }
+    public double? Quantity { get; set; } = 1;
+    public int? Sequence { get; set; }
+    public string? UnitMeasureId { get; set; }
+    public UnitMeasure? UnitMeasure { get; set; }
+    public double? ScrapPercentage { get; set; } = 0;
+    public string? Notes { get; set; }
+}
+</code></pre>
+<h3>5.2 Product Entity Enhancement</h3>
+<p>Add navigation property to Product.cs:</p>
+<pre><code>public ICollection<BillOfMaterial>? BillOfMaterials { get; set; }
+public bool? HasBOM { get; set; } = false;  // Flag to indicate if product has BOM
+</code></pre>
+<h2>6. Infrastructure Layer Implementation</h2>
+<h3>6.1 EF Core Configurations</h3>
+<h4>Infrastructure/Infrastructure/DataAccessManager/EFCore/Configurations/BillOfMaterialConfiguration.cs</h4>
+<pre><code>using Domain.Entities;
+using Infrastructure.DataAccessManager.EFCore.Common;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using static Domain.Common.Constants;
+
+namespace Infrastructure.DataAccessManager.EFCore.Configurations;
+
+public class BillOfMaterialConfiguration : BaseEntityConfiguration<BillOfMaterial>
+{
+    public override void Configure(EntityTypeBuilder<BillOfMaterial> builder)
+    {
+        base.Configure(builder);
+
+        builder.Property(x => x.ProductId).HasMaxLength(IdConsts.MaxLength).IsRequired();
+        builder.Property(x => x.Name).HasMaxLength(NameConsts.MaxLength).IsRequired(false);
+        builder.Property(x => x.Version).HasMaxLength(CodeConsts.MaxLength).IsRequired(false);
+        builder.Property(x => x.Description).HasMaxLength(DescriptionConsts.MaxLength).IsRequired(false);
+        builder.Property(x => x.IsActive).IsRequired().HasDefaultValue(true);
+        builder.Property(x => x.EffectiveFrom).IsRequired(false);
+        builder.Property(x => x.EffectiveTo).IsRequired(false);
+
+        builder.HasIndex(e => e.ProductId);
+        builder.HasIndex(e => e.IsActive);
+        builder.HasIndex(e => new { e.ProductId, e.Version, e.IsActive });
+
+        builder.HasOne(x => x.Product)
+            .WithMany(p => p.BillOfMaterials)
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+</code></pre>
+<h4>Infrastructure/Infrastructure/DataAccessManager/EFCore/Configurations/BillOfMaterialItemConfiguration.cs</h4>
+<pre><code>using Domain.Entities;
+using Infrastructure.DataAccessManager.EFCore.Common;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using static Domain.Common.Constants;
+
+namespace Infrastructure.DataAccessManager.EFCore.Configurations;
+
+public class BillOfMaterialItemConfiguration : BaseEntityConfiguration<BillOfMaterialItem>
+{
+    public override void Configure(EntityTypeBuilder<BillOfMaterialItem> builder)
+    {
+        base.Configure(builder);
+
+        builder.Property(x => x.BillOfMaterialId).HasMaxLength(IdConsts.MaxLength).IsRequired();
+        builder.Property(x => x.ComponentProductId).HasMaxLength(IdConsts.MaxLength).IsRequired();
+        builder.Property(x => x.Quantity).IsRequired().HasDefaultValue(1);
+        builder.Property(x => x.Sequence).IsRequired(false);
+        builder.Property(x => x.UnitMeasureId).HasMaxLength(IdConsts.MaxLength).IsRequired(false);
+        builder.Property(x => x.ScrapPercentage).IsRequired(false).HasDefaultValue(0);
+        builder.Property(x => x.Notes).HasMaxLength(DescriptionConsts.MaxLength).IsRequired(false);
+
+        builder.HasIndex(e => e.BillOfMaterialId);
+        builder.HasIndex(e => e.ComponentProductId);
+
+        builder.HasOne(x => x.BillOfMaterial)
+            .WithMany(b => b.Items)
+            .HasForeignKey(x => x.BillOfMaterialId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.ComponentProduct)
+            .WithMany()
+            .HasForeignKey(x => x.ComponentProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.UnitMeasure)
+            .WithMany()
+            .HasForeignKey(x => x.UnitMeasureId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+</code></pre>
+<h3>6.2 DbContext Updates</h3>
+<p>Add DbSet properties to DataContext.cs:</p>
+<pre><code>public DbSet<BillOfMaterial> BillOfMaterials { get; set; } = null!;
+public DbSet<BillOfMaterialItem> BillOfMaterialItems { get; set; } = null!;
+</code></pre>
+<h2>7. Application Layer Implementation</h2>
+<h3>7.1 BillOfMaterialManager Features</h3>
+<h4>7.1.1 Commands</h4>
+<p><strong>Core/Application/Features/BillOfMaterialManager/Commands/CreateBillOfMaterial.cs</strong></p>
+<ul>
+  <li>
+    <p>Create new BOM with validation</p>
+  </li>
+  <li>
+    <p>Validate ProductId exists and is valid</p>
+  </li>
+  <li>
+    <p>Auto-generate version number if not provided</p>
+  </li>
+  <li>
+    <p>Set default effective dates</p>
+  </li>
+</ul>
+<p><strong>Core/Application/Features/BillOfMaterialManager/Commands/UpdateBillOfMaterial.cs</strong></p>
+<ul>
+  <li>
+    <p>Update BOM header information</p>
+  </li>
+  <li>
+    <p>Validate version changes</p>
+  </li>
+  <li>
+    <p>Handle activation/deactivation</p>
+  </li>
+</ul>
+<p><strong>Core/Application/Features/BillOfMaterialManager/Commands/DeleteBillOfMaterial.cs</strong></p>
+<ul>
+  <li>
+    <p>Soft delete BOM (set IsDeleted = true)</p>
+  </li>
+  <li>
+    <p>Cascade to BOM items</p>
+  </li>
+</ul>
+<h4>7.1.2 Queries</h4>
+<p><strong>Core/Application/Features/BillOfMaterialManager/Queries/GetBillOfMaterialList.cs</strong></p>
+<ul>
+  <li>
+    <p>List all BOMs with filtering</p>
+  </li>
+  <li>
+    <p>Include product information</p>
+  </li>
+  <li>
+    <p>Support pagination</p>
+  </li>
+</ul>
+<p><strong>Core/Application/Features/BillOfMaterialManager/Queries/GetBillOfMaterialByProduct.cs</strong></p>
+<ul>
+  <li>
+    <p>Get active BOM for a specific product</p>
+  </li>
+  <li>
+    <p>Include all items with component details</p>
+  </li>
+</ul>
+<p><strong>Core/Application/Features/BillOfMaterialManager/Queries/GetBillOfMaterialExplosion.cs</strong></p>
+<ul>
+  <li>
+    <p>Recursive query to get full BOM tree (multi-level)</p>
+  </li>
+  <li>
+    <p>Calculate total quantities at each level</p>
+  </li>
+  <li>
+    <p>Return hierarchical structure</p>
+  </li>
+</ul>
+<h3>7.2 BillOfMaterialItemManager Features</h3>
+<h4>7.2.1 Commands</h4>
+<p><strong>Core/Application/Features/BillOfMaterialItemManager/Commands/CreateBillOfMaterialItem.cs</strong></p>
+<ul>
+  <li>
+    <p>Add component to BOM</p>
+  </li>
+  <li>
+    <p>Validate component product exists</p>
+  </li>
+  <li>
+    <p>Validate quantity greater than zero</p>
+  </li>
+  <li>
+    <p>Check for circular references (prevent product from being its own component)</p>
+  </li>
+  <li>
+    <p>Auto-increment sequence number</p>
+  </li>
+</ul>
+<p><strong>Core/Application/Features/BillOfMaterialItemManager/Commands/UpdateBillOfMaterialItem.cs</strong></p>
+<ul>
+  <li>
+    <p>Update component quantities and details</p>
+  </li>
+  <li>
+    <p>Validate changes</p>
+  </li>
+</ul>
+<p><strong>Core/Application/Features/BillOfMaterialItemManager/Commands/DeleteBillOfMaterialItem.cs</strong></p>
+<ul>
+  <li>
+    <p>Remove component from BOM</p>
+  </li>
+  <li>
+    <p>Soft delete</p>
+  </li>
+</ul>
+<h4>7.2.2 Queries</h4>
+<p><strong>Core/Application/Features/BillOfMaterialItemManager/Queries/GetBillOfMaterialItemList.cs</strong></p>
+<ul>
+  <li>
+    <p>List all items for a specific BOM</p>
+  </li>
+  <li>
+    <p>Include component product details</p>
+  </li>
+</ul>
+<h3>7.3 BOM Service</h3>
+<p><strong>Core/Application/Features/BillOfMaterialManager/BillOfMaterialService.cs</strong></p>
+<ul>
+  <li>
+    <p><strong>ValidateCircularReference(productId, componentProductId)</strong> - Recursive check to prevent circular dependencies</p>
+  </li>
+  <li>
+    <p><strong>ExplodeBOM(productId, quantity, level)</strong> - Recursively get all components with calculated quantities</p>
+  </li>
+  <li>
+    <p><strong>CalculateMaterialCost(productId)</strong> - Roll up costs from components</p>
+  </li>
+  <li>
+    <p><strong>GetActiveBOM(productId)</strong> - Get currently active BOM for a product</p>
+  </li>
+  <li>
+    <p><strong>CopyBOM(sourceBomId, newVersion)</strong> - Create new BOM version from existing</p>
+  </li>
+</ul>
+<h3>7.4 Validation Rules</h3>
+<ul>
+  <li>
+    <p>ProductId is required and must exist</p>
+  </li>
+  <li>
+    <p>ComponentProductId must exist and cannot equal ProductId</p>
+  </li>
+  <li>
+    <p>Quantity must be greater than zero</p>
+  </li>
+  <li>
+    <p>ScrapPercentage must be between 0 and 100</p>
+  </li>
+  <li>
+    <p>EffectiveTo must be greater than EffectiveFrom if both provided</p>
+  </li>
+  <li>
+    <p>Only one active BOM per product allowed</p>
+  </li>
+  <li>
+    <p>Cannot delete BOM if referenced by production orders (future enhancement)</p>
+  </li>
+</ul>
+<h2>8. Presentation Layer Implementation</h2>
+<h3>8.1 Backend API Controllers</h3>
+<h4>Presentation/ASPNET/BackEnd/Controllers/BillOfMaterialController.cs</h4>
+<p>RESTful API endpoints following existing patterns:</p>
+<ul>
+  <li>
+    <p><strong>POST /api/BillOfMaterial/CreateBillOfMaterial</strong> - Create new BOM</p>
+  </li>
+  <li>
+    <p><strong>POST /api/BillOfMaterial/UpdateBillOfMaterial</strong> - Update BOM</p>
+  </li>
+  <li>
+    <p><strong>POST /api/BillOfMaterial/DeleteBillOfMaterial</strong> - Delete BOM</p>
+  </li>
+  <li>
+    <p><strong>GET /api/BillOfMaterial/GetBillOfMaterialList</strong> - List all BOMs</p>
+  </li>
+  <li>
+    <p><strong>GET /api/BillOfMaterial/GetBillOfMaterialByProduct</strong> - Get BOM for product</p>
+  </li>
+  <li>
+    <p><strong>GET /api/BillOfMaterial/GetBillOfMaterialExplosion</strong> - Get BOM tree</p>
+  </li>
+</ul>
+<h4>Presentation/ASPNET/BackEnd/Controllers/BillOfMaterialItemController.cs</h4>
+<ul>
+  <li>
+    <p><strong>POST /api/BillOfMaterialItem/CreateBillOfMaterialItem</strong> - Add component</p>
+  </li>
+  <li>
+    <p><strong>POST /api/BillOfMaterialItem/UpdateBillOfMaterialItem</strong> - Update component</p>
+  </li>
+  <li>
+    <p><strong>POST /api/BillOfMaterialItem/DeleteBillOfMaterialItem</strong> - Delete component</p>
+  </li>
+  <li>
+    <p><strong>GET /api/BillOfMaterialItem/GetBillOfMaterialItemList</strong> - List BOM items</p>
+  </li>
+</ul>
+<h3>8.2 Frontend Pages</h3>
+<h4>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterials/BillOfMaterialList.cshtml</h4>
+<p>Main BOM management page with:</p>
+<ul>
+  <li>
+    <p>Syncfusion Grid displaying all BOMs</p>
+  </li>
+  <li>
+    <p>Columns: Product Name, Version, Status (Active/Inactive), Effective Dates, Actions</p>
+  </li>
+  <li>
+    <p>Modal dialog for Create/Edit/Delete operations</p>
+  </li>
+  <li>
+    <p>Product dropdown using Select2</p>
+  </li>
+  <li>
+    <p>Version auto-generation</p>
+  </li>
+  <li>
+    <p>Date pickers for effectivity dates</p>
+  </li>
+</ul>
+<h4>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterials/BillOfMaterialList.cshtml.js</h4>
+<p>Vue.js application with:</p>
+<ul>
+  <li>
+    <p>Grid configuration and data binding</p>
+  </li>
+  <li>
+    <p>CRUD operations via Axios</p>
+  </li>
+  <li>
+    <p>Form validation</p>
+  </li>
+  <li>
+    <p>Error handling</p>
+  </li>
+</ul>
+<h4>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterialItems/BillOfMaterialItemList.cshtml</h4>
+<p>BOM detail/component management page with:</p>
+<ul>
+  <li>
+    <p>Parent BOM selection dropdown</p>
+  </li>
+  <li>
+    <p>Grid showing all components for selected BOM</p>
+  </li>
+  <li>
+    <p>Columns: Sequence, Component Product, Quantity, Unit Measure, Scrap %, Actions</p>
+  </li>
+  <li>
+    <p>Modal for adding/editing components</p>
+  </li>
+  <li>
+    <p>Product lookup with validation against circular references</p>
+  </li>
+  <li>
+    <p>Inline editing support</p>
+  </li>
+</ul>
+<h4>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterials/BillOfMaterialExplosion.cshtml</h4>
+<p>BOM tree view page with:</p>
+<ul>
+  <li>
+    <p>Product selection dropdown</p>
+  </li>
+  <li>
+    <p>Quantity input for calculation</p>
+  </li>
+  <li>
+    <p>Hierarchical tree grid (Syncfusion TreeGrid)</p>
+  </li>
+  <li>
+    <p>Columns: Level, Component, Required Qty, Unit Measure, Unit Cost, Extended Cost</p>
+  </li>
+  <li>
+    <p>Expandable/collapsible nodes</p>
+  </li>
+  <li>
+    <p>Total material cost summary</p>
+  </li>
+  <li>
+    <p>Export to PDF/Excel functionality</p>
+  </li>
+</ul>
+<h3>8.3 Navigation Menu Updates</h3>
+<p>Add to Infrastructure/Infrastructure/SecurityManager/NavigationMenu/NavigationTreeStructure.cs:</p>
+<pre><code>new NavigationItem
+{
+    Title = "Bill of Materials",
+    Icon = "fas fa-sitemap",
+    Children = new List<NavigationItem>
+    {
+        new NavigationItem { Title = "BOM List", Url = "/BillOfMaterials/BillOfMaterialList" },
+        new NavigationItem { Title = "BOM Items", Url = "/BillOfMaterialItems/BillOfMaterialItemList" },
+        new NavigationItem { Title = "BOM Explosion", Url = "/BillOfMaterials/BillOfMaterialExplosion" }
+    }
+}
+</code></pre>
+<h2>9. Testing Strategy</h2>
+<h3>9.1 Unit Tests</h3>
+<h4>Domain Layer Tests</h4>
+<p><strong>Tests.Unit/Domain/Entities/BillOfMaterialTests.cs</strong></p>
+<ul>
+  <li>
+    <p>Test entity creation with default values</p>
+  </li>
+  <li>
+    <p>Test navigation properties</p>
+  </li>
+  <li>
+    <p>Test property setters and getters</p>
+  </li>
+</ul>
+<h4>Application Layer Tests</h4>
+<p><strong>Tests.Unit/Application/BillOfMaterialManager/Commands/CreateBillOfMaterialHandlerTests.cs</strong></p>
+<ul>
+  <li>
+    <p>Test successful BOM creation</p>
+  </li>
+  <li>
+    <p>Test validation failures (missing required fields)</p>
+  </li>
+  <li>
+    <p>Test auto-versioning logic</p>
+  </li>
+  <li>
+    <p>Test effectivity date handling</p>
+  </li>
+</ul>
+<p><strong>Tests.Unit/Application/BillOfMaterialManager/Commands/UpdateBillOfMaterialHandlerTests.cs</strong></p>
+<ul>
+  <li>
+    <p>Test successful update</p>
+  </li>
+  <li>
+    <p>Test validation on update</p>
+  </li>
+  <li>
+    <p>Test activation/deactivation</p>
+  </li>
+</ul>
+<p><strong>Tests.Unit/Application/BillOfMaterialItemManager/Commands/CreateBillOfMaterialItemHandlerTests.cs</strong></p>
+<ul>
+  <li>
+    <p>Test successful component addition</p>
+  </li>
+  <li>
+    <p>Test circular reference detection</p>
+  </li>
+  <li>
+    <p>Test quantity validation</p>
+  </li>
+  <li>
+    <p>Test component product validation</p>
+  </li>
+</ul>
+<p><strong>Tests.Unit/Application/BillOfMaterialManager/BillOfMaterialServiceTests.cs</strong></p>
+<ul>
+  <li>
+    <p>Test ValidateCircularReference with various scenarios:
+        </p>
+    <ul>
+      <li>
+        <p>Direct circular reference (A contains A)</p>
+      </li>
+      <li>
+        <p>Indirect circular reference (A contains B, B contains A)</p>
+      </li>
+      <li>
+        <p>Multi-level circular reference (A contains B, B contains C, C contains A)</p>
+      </li>
+      <li>
+        <p>Valid non-circular references</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Test ExplodeBOM for multi-level BOMs</p>
+  </li>
+  <li>
+    <p>Test CalculateMaterialCost with nested components</p>
+  </li>
+  <li>
+    <p>Test GetActiveBOM with multiple versions</p>
+  </li>
+</ul>
+<h3>9.2 Integration Tests</h3>
+<p><strong>Tests.Integration/API/BillOfMaterialControllerTests.cs</strong></p>
+<ul>
+  <li>
+    <p>Test full CRUD operations via API</p>
+  </li>
+  <li>
+    <p>Test API authentication and authorization</p>
+  </li>
+  <li>
+    <p>Test API response formats</p>
+  </li>
+  <li>
+    <p>Test error handling and status codes</p>
+  </li>
+</ul>
+<p><strong>Tests.Integration/Database/BillOfMaterialRepositoryTests.cs</strong></p>
+<ul>
+  <li>
+    <p>Test database operations with actual DbContext</p>
+  </li>
+  <li>
+    <p>Test entity relationships and navigation properties</p>
+  </li>
+  <li>
+    <p>Test cascade delete behavior</p>
+  </li>
+  <li>
+    <p>Test soft delete functionality</p>
+  </li>
+</ul>
+<h3>9.3 End-to-End Tests</h3>
+<p><strong>Tests.E2E/BillOfMaterials/BillOfMaterialWorkflowTests.cs</strong></p>
+<ul>
+  <li>
+    <p>Test complete BOM creation workflow:
+        </p>
+    <ul>
+      <li>
+        <p>Create parent product</p>
+      </li>
+      <li>
+        <p>Create component products</p>
+      </li>
+      <li>
+        <p>Create BOM</p>
+      </li>
+      <li>
+        <p>Add multiple components</p>
+      </li>
+      <li>
+        <p>Verify BOM explosion</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Test multi-level BOM creation and explosion</p>
+  </li>
+  <li>
+    <p>Test BOM versioning workflow</p>
+  </li>
+  <li>
+    <p>Test BOM deactivation and reactivation</p>
+  </li>
+</ul>
+<h3>9.4 Test Data Seeders</h3>
+<p><strong>Infrastructure/Infrastructure/SeedManager/Demos/BillOfMaterialSeeder.cs</strong></p>
+<ul>
+  <li>
+    <p>Create sample products (raw materials, sub-assemblies, finished goods)</p>
+  </li>
+  <li>
+    <p>Create sample BOMs with various complexity levels:
+        </p>
+    <ul>
+      <li>
+        <p>Simple single-level BOM</p>
+      </li>
+      <li>
+        <p>Multi-level BOM (3-4 levels deep)</p>
+      </li>
+      <li>
+        <p>BOM with multiple versions</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Create realistic quantities and scrap percentages</p>
+  </li>
+</ul>
+<h2>10. Database Migration</h2>
+<h3>10.1 Migration Steps</h3>
+<ol>
+  <li>
+    <p>Create entities in Core/Domain/Entities</p>
+  </li>
+  <li>
+    <p>Create EF Core configurations in Infrastructure</p>
+  </li>
+  <li>
+    <p>Add DbSet properties to DataContext</p>
+  </li>
+  <li>
+    <p>Run EF Core migration command:
+        </p>
+    <pre><code>dotnet ef migrations add AddBillOfMaterialSupport --project Infrastructure/Infrastructure</code></pre>
+  </li>
+  <li>
+    <p>Review generated migration file</p>
+  </li>
+  <li>
+    <p>Apply migration to database:
+        </p>
+    <pre><code>dotnet ef database update --project Infrastructure/Infrastructure</code></pre>
+  </li>
+</ol>
+<h3>10.2 Migration Script Contents</h3>
+<p>The migration will create:</p>
+<ul>
+  <li>
+    <p><strong>BillOfMaterials</strong> table with all columns and indexes</p>
+  </li>
+  <li>
+    <p><strong>BillOfMaterialItems</strong> table with all columns and indexes</p>
+  </li>
+  <li>
+    <p>Foreign key constraints to Products, UnitMeasures</p>
+  </li>
+  <li>
+    <p>Cascade delete from BillOfMaterials to BillOfMaterialItems</p>
+  </li>
+  <li>
+    <p>Indexes for performance optimization</p>
+  </li>
+</ul>
+<h2>11. Implementation Phases</h2>
+<h3>Phase 1: Foundation (Week 1)</h3>
+<ul>
+  <li>
+    <p>Create domain entities (BillOfMaterial, BillOfMaterialItem)</p>
+  </li>
+  <li>
+    <p>Create EF Core configurations</p>
+  </li>
+  <li>
+    <p>Run database migration</p>
+  </li>
+  <li>
+    <p>Write unit tests for entities</p>
+  </li>
+  <li>
+    <p>Update Product entity with BOM navigation</p>
+  </li>
+</ul>
+<h3>Phase 2: Application Layer (Week 2)</h3>
+<ul>
+  <li>
+    <p>Implement BillOfMaterialManager commands (Create, Update, Delete)</p>
+  </li>
+  <li>
+    <p>Implement BillOfMaterialManager queries (List, ByProduct)</p>
+  </li>
+  <li>
+    <p>Implement BillOfMaterialItemManager commands and queries</p>
+  </li>
+  <li>
+    <p>Create BillOfMaterialService with core logic</p>
+  </li>
+  <li>
+    <p>Write unit tests for all handlers and services</p>
+  </li>
+</ul>
+<h3>Phase 3: API Layer (Week 3)</h3>
+<ul>
+  <li>
+    <p>Create BillOfMaterialController</p>
+  </li>
+  <li>
+    <p>Create BillOfMaterialItemController</p>
+  </li>
+  <li>
+    <p>Write integration tests for API endpoints</p>
+  </li>
+  <li>
+    <p>Test authentication and authorization</p>
+  </li>
+</ul>
+<h3>Phase 4: Frontend - Basic CRUD (Week 4)</h3>
+<ul>
+  <li>
+    <p>Create BillOfMaterialList page (Razor + Vue.js)</p>
+  </li>
+  <li>
+    <p>Create BillOfMaterialItemList page</p>
+  </li>
+  <li>
+    <p>Implement CRUD operations in UI</p>
+  </li>
+  <li>
+    <p>Add navigation menu items</p>
+  </li>
+  <li>
+    <p>Test basic workflows</p>
+  </li>
+</ul>
+<h3>Phase 5: Advanced Features (Week 5)</h3>
+<ul>
+  <li>
+    <p>Implement BOM explosion query (recursive)</p>
+  </li>
+  <li>
+    <p>Create BillOfMaterialExplosion page with tree grid</p>
+  </li>
+  <li>
+    <p>Implement material cost calculation</p>
+  </li>
+  <li>
+    <p>Add BOM versioning and copy functionality</p>
+  </li>
+  <li>
+    <p>Implement circular reference validation</p>
+  </li>
+</ul>
+<h3>Phase 6: Testing and Refinement (Week 6)</h3>
+<ul>
+  <li>
+    <p>Create comprehensive test data seeders</p>
+  </li>
+  <li>
+    <p>Perform end-to-end testing</p>
+  </li>
+  <li>
+    <p>Performance testing with large BOMs</p>
+  </li>
+  <li>
+    <p>UI/UX refinements</p>
+  </li>
+  <li>
+    <p>Documentation updates</p>
+  </li>
+  <li>
+    <p>Bug fixes and optimization</p>
+  </li>
+</ul>
+<h2>12. Future Enhancements</h2>
+<h3>12.1 Production Order Integration</h3>
+<ul>
+  <li>
+    <p>Create production orders that consume BOM components</p>
+  </li>
+  <li>
+    <p>Generate material requirement planning (MRP)</p>
+  </li>
+  <li>
+    <p>Track component consumption and backflushing</p>
+  </li>
+  <li>
+    <p>Integrate with inventory transactions</p>
+  </li>
+</ul>
+<h3>12.2 Cost Analysis</h3>
+<ul>
+  <li>
+    <p>Standard cost vs actual cost comparison</p>
+  </li>
+  <li>
+    <p>Cost rollup reports</p>
+  </li>
+  <li>
+    <p>Variance analysis</p>
+  </li>
+  <li>
+    <p>What-if cost scenarios</p>
+  </li>
+</ul>
+<h3>12.3 Advanced BOM Features</h3>
+<ul>
+  <li>
+    <p>Alternate components (substitutions)</p>
+  </li>
+  <li>
+    <p>Option items (customer-selectable options)</p>
+  </li>
+  <li>
+    <p>Phantom BOMs (pass-through assemblies)</p>
+  </li>
+  <li>
+    <p>Co-products and by-products</p>
+  </li>
+  <li>
+    <p>Engineering change orders (ECO)</p>
+  </li>
+</ul>
+<h3>12.4 Reporting</h3>
+<ul>
+  <li>
+    <p>Where-used reports (find all BOMs using a component)</p>
+  </li>
+  <li>
+    <p>Single-level BOM reports</p>
+  </li>
+  <li>
+    <p>Indented BOM reports</p>
+  </li>
+  <li>
+    <p>Cost analysis reports</p>
+  </li>
+  <li>
+    <p>Component shortage reports</p>
+  </li>
+</ul>
+<h2>13. Performance Considerations</h2>
+<h3>13.1 Database Optimization</h3>
+<ul>
+  <li>
+    <p>Proper indexing on frequently queried columns</p>
+  </li>
+  <li>
+    <p>Use compiled queries for BOM explosion</p>
+  </li>
+  <li>
+    <p>Consider materialized path or closure table for deep hierarchies</p>
+  </li>
+  <li>
+    <p>Implement caching for frequently accessed BOMs</p>
+  </li>
+</ul>
+<h3>13.2 Query Optimization</h3>
+<ul>
+  <li>
+    <p>Use AsNoTracking() for read-only queries</p>
+  </li>
+  <li>
+    <p>Implement pagination for large result sets</p>
+  </li>
+  <li>
+    <p>Use projection (Select) to limit data transfer</p>
+  </li>
+  <li>
+    <p>Optimize recursive queries with CTE (Common Table Expressions)</p>
+  </li>
+</ul>
+<h3>13.3 Caching Strategy</h3>
+<ul>
+  <li>
+    <p>Cache active BOMs by ProductId</p>
+  </li>
+  <li>
+    <p>Cache BOM explosion results with short TTL</p>
+  </li>
+  <li>
+    <p>Invalidate cache on BOM updates</p>
+  </li>
+  <li>
+    <p>Use distributed cache for multi-server deployments</p>
+  </li>
+</ul>
+<h2>14. Security Considerations</h2>
+<h3>14.1 Authorization</h3>
+<ul>
+  <li>
+    <p>Role-based access control for BOM operations</p>
+  </li>
+  <li>
+    <p>Separate permissions for view, create, edit, delete</p>
+  </li>
+  <li>
+    <p>Restrict BOM explosion to authorized users</p>
+  </li>
+  <li>
+    <p>Audit logging for all BOM changes</p>
+  </li>
+</ul>
+<h3>14.2 Data Validation</h3>
+<ul>
+  <li>
+    <p>Server-side validation for all inputs</p>
+  </li>
+  <li>
+    <p>Prevent SQL injection through parameterized queries</p>
+  </li>
+  <li>
+    <p>Validate circular references before saving</p>
+  </li>
+  <li>
+    <p>Sanitize user inputs in descriptions and notes</p>
+  </li>
+</ul>
+<h2>15. Documentation Requirements</h2>
+<h3>15.1 Technical Documentation</h3>
+<ul>
+  <li>
+    <p>API documentation with Swagger</p>
+  </li>
+  <li>
+    <p>Database schema diagrams</p>
+  </li>
+  <li>
+    <p>Code comments for complex algorithms</p>
+  </li>
+  <li>
+    <p>Architecture decision records (ADR)</p>
+  </li>
+</ul>
+<h3>15.2 User Documentation</h3>
+<ul>
+  <li>
+    <p>User guide for BOM creation and management</p>
+  </li>
+  <li>
+    <p>Tutorial for multi-level BOM setup</p>
+  </li>
+  <li>
+    <p>FAQ for common scenarios</p>
+  </li>
+  <li>
+    <p>Video tutorials for key workflows</p>
+  </li>
+</ul>
+<h2>16. File Summary</h2>
+<h3>16.1 New Files to Create (33 files)</h3>
+<h4>Domain Layer (2 files)</h4>
+<ul>
+  <li>
+    <p>Core/Domain/Entities/BillOfMaterial.cs</p>
+  </li>
+  <li>
+    <p>Core/Domain/Entities/BillOfMaterialItem.cs</p>
+  </li>
+</ul>
+<h4>Infrastructure Layer (4 files)</h4>
+<ul>
+  <li>
+    <p>Infrastructure/Infrastructure/DataAccessManager/EFCore/Configurations/BillOfMaterialConfiguration.cs</p>
+  </li>
+  <li>
+    <p>Infrastructure/Infrastructure/DataAccessManager/EFCore/Configurations/BillOfMaterialItemConfiguration.cs</p>
+  </li>
+  <li>
+    <p>Infrastructure/Infrastructure/SeedManager/Demos/BillOfMaterialSeeder.cs</p>
+  </li>
+  <li>
+    <p>Infrastructure/Infrastructure/SeedManager/Demos/BillOfMaterialItemSeeder.cs</p>
+  </li>
+</ul>
+<h4>Application Layer (9 files)</h4>
+<ul>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialManager/BillOfMaterialService.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialManager/Commands/CreateBillOfMaterial.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialManager/Commands/UpdateBillOfMaterial.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialManager/Commands/DeleteBillOfMaterial.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialManager/Queries/GetBillOfMaterialList.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialManager/Queries/GetBillOfMaterialByProduct.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialManager/Queries/GetBillOfMaterialExplosion.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialItemManager/Commands/CreateBillOfMaterialItem.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialItemManager/Commands/UpdateBillOfMaterialItem.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialItemManager/Commands/DeleteBillOfMaterialItem.cs</p>
+  </li>
+  <li>
+    <p>Core/Application/Features/BillOfMaterialItemManager/Queries/GetBillOfMaterialItemList.cs</p>
+  </li>
+</ul>
+<h4>Presentation Layer (8 files)</h4>
+<ul>
+  <li>
+    <p>Presentation/ASPNET/BackEnd/Controllers/BillOfMaterialController.cs</p>
+  </li>
+  <li>
+    <p>Presentation/ASPNET/BackEnd/Controllers/BillOfMaterialItemController.cs</p>
+  </li>
+  <li>
+    <p>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterials/BillOfMaterialList.cshtml</p>
+  </li>
+  <li>
+    <p>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterials/BillOfMaterialList.cshtml.js</p>
+  </li>
+  <li>
+    <p>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterialItems/BillOfMaterialItemList.cshtml</p>
+  </li>
+  <li>
+    <p>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterialItems/BillOfMaterialItemList.cshtml.js</p>
+  </li>
+  <li>
+    <p>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterials/BillOfMaterialExplosion.cshtml</p>
+  </li>
+  <li>
+    <p>Presentation/ASPNET/FrontEnd/Pages/BillOfMaterials/BillOfMaterialExplosion.cshtml.js</p>
+  </li>
+</ul>
+<h4>Test Files (10 files)</h4>
+<ul>
+  <li>
+    <p>Tests.Unit/Domain/Entities/BillOfMaterialTests.cs</p>
+  </li>
+  <li>
+    <p>Tests.Unit/Domain/Entities/BillOfMaterialItemTests.cs</p>
+  </li>
+  <li>
+    <p>Tests.Unit/Application/BillOfMaterialManager/Commands/CreateBillOfMaterialHandlerTests.cs</p>
+  </li>
+  <li>
+    <p>Tests.Unit/Application/BillOfMaterialManager/Commands/UpdateBillOfMaterialHandlerTests.cs</p>
+  </li>
+  <li>
+    <p>Tests.Unit/Application/BillOfMaterialItemManager/Commands/CreateBillOfMaterialItemHandlerTests.cs</p>
+  </li>
+  <li>
+    <p>Tests.Unit/Application/BillOfMaterialManager/BillOfMaterialServiceTests.cs</p>
+  </li>
+  <li>
+    <p>Tests.Integration/API/BillOfMaterialControllerTests.cs</p>
+  </li>
+  <li>
+    <p>Tests.Integration/Database/BillOfMaterialRepositoryTests.cs</p>
+  </li>
+  <li>
+    <p>Tests.E2E/BillOfMaterials/BillOfMaterialWorkflowTests.cs</p>
+  </li>
+  <li>
+    <p>Tests.E2E/BillOfMaterials/BillOfMaterialExplosionTests.cs</p>
+  </li>
+</ul>
+<h3>16.2 Files to Modify (4 files)</h3>
+<ul>
+  <li>
+    <p>Core/Domain/Entities/Product.cs - Add BOM navigation properties</p>
+  </li>
+  <li>
+    <p>Infrastructure/Infrastructure/DataAccessManager/EFCore/Contexts/DataContext.cs - Add DbSet properties</p>
+  </li>
+  <li>
+    <p>Infrastructure/Infrastructure/DataAccessManager/EFCore/Configurations/ProductConfiguration.cs - Configure BOM relationship</p>
+  </li>
+  <li>
+    <p>Infrastructure/Infrastructure/SecurityManager/NavigationMenu/NavigationTreeStructure.cs - Add menu items</p>
+  </li>
+</ul>
+<h2>17. Success Criteria</h2>
+<ul>
+  <li>
+    <p>All unit tests passing with 80%+ code coverage</p>
+  </li>
+  <li>
+    <p>All integration tests passing</p>
+  </li>
+  <li>
+    <p>Successfully create and manage single-level BOMs</p>
+  </li>
+  <li>
+    <p>Successfully create and manage multi-level BOMs (at least 4 levels deep)</p>
+  </li>
+  <li>
+    <p>BOM explosion correctly calculates quantities at all levels</p>
+  </li>
+  <li>
+    <p>Circular reference validation prevents invalid BOMs</p>
+  </li>
+  <li>
+    <p>Material cost calculation accurate for nested BOMs</p>
+  </li>
+  <li>
+    <p>UI is responsive and user-friendly</p>
+  </li>
+  <li>
+    <p>Performance acceptable for BOMs with 100+ components</p>
+  </li>
+  <li>
+    <p>All CRUD operations working via API and UI</p>
+  </li>
+</ul>
+<h2>18. Risks and Mitigation</h2>
+<h3>18.1 Technical Risks</h3>
+<ul>
+  <li>
+    <p><strong>Risk:</strong> Performance issues with deep BOM hierarchies
+        <br><strong>Mitigation:</strong> Implement query optimization, caching, and consider materialized path pattern</p>
+  </li>
+  <li>
+    <p><strong>Risk:</strong> Circular reference detection may be slow
+        <br><strong>Mitigation:</strong> Cache BOM structures and use efficient graph traversal algorithms</p>
+  </li>
+  <li>
+    <p><strong>Risk:</strong> Complex recursive queries may cause database timeouts
+        <br><strong>Mitigation:</strong> Set reasonable depth limits, optimize indexes, use CTEs</p>
+  </li>
+</ul>
+<h3>18.2 Business Risks</h3>
+<ul>
+  <li>
+    <p><strong>Risk:</strong> Users may not understand BOM versioning
+        <br><strong>Mitigation:</strong> Provide clear documentation and training materials</p>
+  </li>
+  <li>
+    <p><strong>Risk:</strong> Data migration from existing systems may be complex
+        <br><strong>Mitigation:</strong> Create robust import tools and validation scripts</p>
+  </li>
+</ul>
+<h2>19. Conclusion</h2>
+<p>This technical plan outlines a comprehensive approach to implementing a multi-level Bill of Materials system in the INDOTALENT WMS. The implementation follows the existing architecture patterns and maintains consistency with the current codebase. The phased approach allows for incremental development and testing, reducing risk and ensuring quality.</p>
+<p>The BOM system will provide a solid foundation for manufacturing and assembly operations, with room for future enhancements such as production order integration and advanced cost analysis.</p>
+<p><strong>Estimated Total Effort:</strong> 6 weeks (1 senior developer)</p>
+<p><strong>Total New Files:</strong> 33</p>
+<p><strong>Total Modified Files:</strong> 4</p>
+<p><strong>Database Tables:</strong> 2 new tables</p>

@@ -24,6 +24,8 @@ public interface IEntityDbSet
     public DbSet<UnitMeasure> UnitMeasure { get; set; }
     public DbSet<ProductGroup> ProductGroup { get; set; }
     public DbSet<Product> Product { get; set; }
+    public DbSet<BillOfMaterial> BillOfMaterials { get; set; }
+    public DbSet<BillOfMaterialItem> BillOfMaterialItems { get; set; }
     public DbSet<CustomerContact> CustomerContact { get; set; }
     public DbSet<VendorContact> VendorContact { get; set; }
     public DbSet<Tax> Tax { get; set; }

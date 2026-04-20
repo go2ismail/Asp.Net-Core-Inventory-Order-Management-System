@@ -13,4 +13,6 @@ public class Product : BaseEntity
     public UnitMeasure? UnitMeasure { get; set; }
     public string? ProductGroupId { get; set; }
     public ProductGroup? ProductGroup { get; set; }
+    public ICollection<BillOfMaterial>? BillOfMaterials { get; set; }
+    public bool? HasBOM { get; set; } = false;
 }
