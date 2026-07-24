@@ -1,0 +1,7 @@
+bin/
+obj/
+.git/
+.gitattributes
+.gitignore
+*.md
+LICENSE.txt
