@@ -151,7 +151,7 @@ The document and image endpoints only serve file names that were generated on up
 
 - **Static uploaded files:** uploads still live under `wwwroot/app_data`, so a file is reachable without authentication when its generated GUID name is known. The API endpoints enforce authentication; moving the storage folders outside the web root is a separate migration.
 - **Regular user password policy:** production only enforces the 12-character minimum for the administrator. The global Identity policy in `appsettings.json` still allows 6-character user passwords; raising it is a separate change.
-- **AutoMapper:** `AutoMapper` remains on 13.0.1 because every patched release (15.1.1 and later) is distributed under RPL 1.5 or a commercial license. The advisory is a denial-of-service that requires mapping an attacker-controlled deeply nested object graph; this application maps database entities and fixed request DTOs, and `System.Text.Json` limits request nesting. Upgrading needs a licensing decision.
+- **AutoMapper license:** `AutoMapper` is on 16.3.0 and is distributed under RPL 1.5 or a commercial license; this project uses the RPL 1.5 option. The denial-of-service advisory GHSA-rvv3-g6hj-g44x is fixed in this version.
 - The `MailKit`/`MimeKit` (4.18.2) and `System.Security.Cryptography.Pkcs` (10.0.14) references contain the current security fixes.
 
 ---
