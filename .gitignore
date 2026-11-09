@@ -1,2 +1,14 @@
 ﻿.vs/
 obj/
+bin/
+TestResults/
+*.trx
+playwright-report/
+test-results/
+Presentation/ASPNET/wwwroot/app_data/logs/*
+!Presentation/ASPNET/wwwroot/app_data/logs/keep.txt
+Presentation/ASPNET/wwwroot/app_data/images/*
+!Presentation/ASPNET/wwwroot/app_data/images/keep.txt
+Presentation/ASPNET/wwwroot/app_data/docs/*
+!Presentation/ASPNET/wwwroot/app_data/docs/keep.txt
+.kilo/

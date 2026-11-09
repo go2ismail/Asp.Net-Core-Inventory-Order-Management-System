@@ -4,7 +4,7 @@ using Infrastructure;
 using Infrastructure.DataAccessManager.EFCore;
 using Infrastructure.SeedManager;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace ASPNET.BackEnd;
 
@@ -50,19 +50,9 @@ public static class BackEndConfiguration
                 Description = "JWT Authorization header using the Bearer scheme."
             });
 
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
             {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    new string[] { }
-                }
+                [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
             });
 
         });
