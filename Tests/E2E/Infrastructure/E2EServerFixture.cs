@@ -12,6 +12,14 @@ public class E2EServerFixture
     private const string DefaultBaseUrl = "http://127.0.0.1:5187";
     private const string DefaultDatabaseName = "WHMS-LTE-FS-E2E";
 
+    /// <summary>
+    /// Credentials of the administrator account that the application seeds into the local test
+    /// database. They are test-only: the fixture passes them as environment variables so the suite
+    /// never depends on a value that is committed to appsettings.json or on a developer machine.
+    /// </summary>
+    public const string AdminEmail = "admin@root.com";
+    public const string AdminPassword = "E2E-Admin-Passw0rd!";
+
     private static readonly ConcurrentQueue<string> LogTail = new();
     private static readonly object LogLock = new();
     private static Process? _server;
@@ -66,6 +74,10 @@ public class E2EServerFixture
         startInfo.Environment["AspNetIdentity__Lockout__MaxFailedAccessAttempts"] = "1000";
         // A random key per run: the tests never depend on a committed or local secret.
         startInfo.Environment["Jwt__Key"] = CreateRandomJwtKey();
+        // Test-only administrator credentials for the local test database. When the database was
+        // seeded by an earlier release, the application rotates the published password to this value.
+        startInfo.Environment["AspNetIdentity__DefaultAdmin__Email"] = AdminEmail;
+        startInfo.Environment["AspNetIdentity__DefaultAdmin__Password"] = AdminPassword;
 
         _server = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
         _server.OutputDataReceived += (_, args) => AppendLog(logFile, args.Data);

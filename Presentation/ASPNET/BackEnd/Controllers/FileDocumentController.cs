@@ -3,6 +3,7 @@ using Application.Features.FileDocumentManager.Queries;
 using ASPNET.BackEnd.Common.Base;
 using ASPNET.BackEnd.Common.Models;
 using Infrastructure.FileDocumentManager;
+using Infrastructure.FileStorage;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,6 +63,13 @@ public class FileDocumentController : BaseApiController
         [FromQuery] string documentName,
         CancellationToken cancellationToken)
     {
+        if (!string.IsNullOrEmpty(documentName) && !StoragePathGuard.IsPlainFileName(documentName))
+        {
+            // A document name is the file name that was generated on upload, so a path, a drive or a
+            // parent directory segment is rejected before it can reach the file system.
+            return BadRequest("Invalid document name.");
+        }
+
         if (string.IsNullOrEmpty(documentName) || Path.GetExtension(documentName) == string.Empty)
         {
             documentName = "nodocument.txt";

@@ -71,11 +71,27 @@ Additionally, it simplifies **deployment**, as all code resides in a single repo
 
 
 
-# Configuration and Secrets
+# Demo Mode and Production Configuration
 
-`appsettings.json` keeps only settings that are safe to publish. The JWT signing key (`Jwt:Key`) is intentionally empty so the setting stays visible for review and monitoring, while the secret itself is supplied by the host.
+The application has two explicit modes, controlled by the `IsDemoVersion` setting:
 
-The key is read from the first source that provides it, highest precedence first:
+| Mode | `IsDemoVersion` | Credentials | Demo data |
+|---|---|---|---|
+| Demo (default) | `true` | the documented demo key and `admin@root.com` / `123456` from `appsettings.json` | seeded |
+| Production | `false` | `Jwt__Key` and `AspNetIdentity__DefaultAdmin__Password` from the host | not seeded |
+
+**A fresh clone runs in demo mode.** It starts without a `.env` file and without any environment variables, creates the database, seeds the demo data, and accepts the documented demo credentials. The application logs a prominent warning at start up while demo mode is enabled.
+
+> **Never use demo mode with real data.** If `IsDemoVersion=true` is left enabled in production, the published `123456` administrator password and the demo signing key stay valid. A production deployment must set `IsDemoVersion=false` and provide both secrets.
+
+## Production secrets
+
+`appsettings.json` keeps only settings that are safe to publish. The two deployment secrets are read from the first source that provides them, highest precedence first:
+
+| Setting | Secret | Why |
+|---|---|---|
+| `Jwt:Key` | signing key of the access tokens | anybody who knows it can mint a token with any role |
+| `AspNetIdentity:DefaultAdmin:Password` | password of the administrator account that the first start up creates | every installation would otherwise share the same known password |
 
 | Source | How to set it | Typical use |
 |---|---|---|
@@ -83,29 +99,52 @@ The key is read from the first source that provides it, highest precedence first
 | `.env` file | `Jwt__Key=<secret>` in `<repo>/.env` (or `Presentation/ASPNET/.env`) | local development, Docker Compose |
 | `dotnet user-secrets` | `dotnet user-secrets set "Jwt:Key" "<secret>" --project Presentation/ASPNET` | local development without a file |
 
-Generate a random key with one command (creates or updates the `Jwt__Key` line of `<repo>/.env`):
+Generate both secrets and switch the application to production mode with one command (creates or updates `<repo>/.env`):
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/new-jwt-key.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/new-secrets.ps1
 ```
+
+The script writes `IsDemoVersion=false`, a random `Jwt__Key` of at least 32 bytes, and a random `AspNetIdentity__DefaultAdmin__Password` of at least 12 characters. The individual helpers `scripts/new-jwt-key.ps1` and `scripts/new-admin-password.ps1` remain available when only one value needs to change.
 
 Or, on Linux and macOS:
 
 ```bash
-echo "Jwt__Key=$(openssl rand -base64 48 | tr '+/' '-_' | tr -d '=')" >> .env
+{
+  echo "IsDemoVersion=false"
+  echo "Jwt__Key=$(openssl rand -base64 48 | tr '+/' '-_' | tr -d '=')"
+  echo "AspNetIdentity__DefaultAdmin__Password=$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)"
+} > .env
 ```
 
 Facts that matter when you operate the application:
 
+- **Demo mode is the default and is intentionally public.** `appsettings.json` contains the documented demo key and `admin@root.com` / `123456`. Demo mode accepts them, keeps the password unchanged, and seeds the demo data.
+- **Production mode rejects the published values.** With `IsDemoVersion=false`, the demo JWT key, an empty key, and a key shorter than 32 bytes stop the start up. The published administrator password, an empty password, and a password shorter than 12 characters are rejected too.
 - **Environment variables always win.** The `.env` file only fills the gaps, so a container, a CI job, or a production host can override it without editing files.
-- **`.env` is never committed.** It is listed in `.gitignore` and in `.dockerignore`; only `.env.example` (documentation with a placeholder value) is in the repository.
-- **The application fails fast.** A missing key, a key shorter than 32 bytes, or the default key that earlier releases published stops the start up with a message that names every supported source, instead of silently signing tokens with a publicly known secret.
+- **`.env` is never committed.** It is listed in `.gitignore` and in `.dockerignore`; only `.env.example` (documentation with placeholder values) is in the repository.
 - **Rotating the key signs everybody out.** Access tokens that were issued before the change no longer validate, which is exactly how a leaked key is taken out of circulation.
 - **Authorization is checked against the database.** Every authenticated request resolves the account and its current roles, so a deleted, blocked, or demoted user loses access immediately instead of keeping the roles that were stored in the token.
+- **Existing production installations rotate the published password automatically.** When the stored administrator account still accepts `123456`, the application replaces it with `AspNetIdentity__DefaultAdmin__Password` at the next start up and logs a warning. An installation in that state refuses to start when no replacement password is configured.
+- **The public live demo keeps `123456`.** Demo mode does not rotate the documented credential. Set `IsDemoVersion=false` before storing any real data.
 
-> **Upgrading an existing installation:** the key that earlier releases shipped is rejected, the application stops at start up and asks for a real one. Generate a key, set it on the server, and reload the site. Every user has to sign in again because tokens that were signed with the old key stop validating.
+> **Upgrading an existing production installation (JWT key):** the demo key that earlier releases shipped is rejected when `IsDemoVersion=false`, the application stops at start up and asks for a real one. Generate a key, set it on the server, and reload the site. Every user has to sign in again because tokens that were signed with the old key stop validating.
 
-> **Upgrading an existing installation:** the key that earlier releases shipped is rejected, the application stops at start up and asks for a real one. Generate a key, set it on the server, and reload the site. Every user has to sign in again because tokens that were signed with the old key stop validating.
+> **Upgrading an existing production installation (administrator password):** set `IsDemoVersion=false`, `AspNetIdentity__DefaultAdmin__Password` (and `AspNetIdentity__DefaultAdmin__Email` when the account uses another address) before starting the new version. The account keeps working, but the password that the repository published is replaced on the next start up.
+
+### Docker demo stack
+
+To try the application without installing SQL Server or creating any secret, run the self-contained demo stack:
+
+```bash
+docker compose -f docker-compose.demo.yml up --build
+```
+
+Open `http://localhost:5000` and sign in with `admin@root.com` / `123456`. The stack runs with `IsDemoVersion=true`, the demo key, and demo data. Do not store real data in it, and do not use it as a production deployment.
+
+### Uploaded files
+
+The document and image endpoints only serve file names that were generated on upload. A name with a directory part, a drive, or a parent directory segment (`../../appsettings.json`, `C:\Windows\win.ini`, `/etc/passwd`) is rejected with `400 Bad Request`, and the storage service additionally verifies that the canonical path is a child of the configured `PathFolder` before it reads a byte. Keep `FileImageManager:PathFolder` and `FileDocumentManager:PathFolder` outside the folders that hold configuration files.
 
 ---
 
@@ -114,14 +153,16 @@ Facts that matter when you operate the application:
 Getting started is **easy**! Thanks to **Monolithic Clean Architecture**, everything is structured and streamlined. Plus, even though this project uses a **modern JavaScript framework like Vue.js**, it **does not require a build system**—just use Visual Studio to run and build effortlessly.  
 
 1. Open the project using Visual Studio.  
-2. Update the connection string in `appsettings.json` to match your SQL Server database.  
-3. Create the JWT signing key once, see [Configuration and Secrets](#configuration-and-secrets):
-   - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/new-jwt-key.ps1` (writes `<repo>/.env`)
-   - The application refuses to start without it, and the start up error explains how to set it.
-4. Clean and build the solution:  
-   - Right-click the solution > Clean  
-   - Right-click the solution > Build  
-5. Run the project:  
+2. Update the connection string in `appsettings.json` to match your SQL Server database, if needed.
+3. **Demo mode needs no additional setup.** `IsDemoVersion` is `true` by default, so the documented demo key and `admin@root.com` / `123456` are used and the demo data is seeded. Do not create a `.env` file for the demo.
+4. **For a production database, run the one-command setup** (see [Demo Mode and Production Configuration](#demo-mode-and-production-configuration)):
+   - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/new-secrets.ps1`
+   - It writes `IsDemoVersion=false`, `Jwt__Key`, and `AspNetIdentity__DefaultAdmin__Password` to `<repo>/.env`.
+   - The application refuses to start with demo values when `IsDemoVersion=false`, and the start up error explains how to set them.
+5. Clean and build the solution:
+   - Right-click the solution > Clean
+   - Right-click the solution > Build
+6. Run the project:
    - Click the green "play" button in the Visual Studio toolbar.  
 
 > **Note**: The database will be created automatically if it does not exist.  
@@ -144,22 +185,32 @@ For deployment to IIS:
    - Copy the published files to your IIS directory.  
    - Configure IIS to point to the folder and ensure database connectivity.  
 
-3. **Set the JWT signing key on the server** (see [Configuration and Secrets](#configuration-and-secrets)). The published `appsettings.json` contains an empty `Jwt:Key`, so provide the secret through the environment of the application pool or through the `web.config` that is generated by the publish:
+3. **Disable demo mode and set the secrets on the server** (see [Demo Mode and Production Configuration](#demo-mode-and-production-configuration)). The published `appsettings.json` contains the public demo values, so a production deployment must provide `IsDemoVersion=false`, a real `Jwt__Key`, and a real `AspNetIdentity:DefaultAdmin:Password` through the environment of the application pool or through the `web.config` that is generated by the publish:
 
    ```xml
    <aspNetCore processPath="dotnet" arguments=".\ASPNET.dll" stdoutLogEnabled="false" hostingModel="inprocess">
      <environmentVariables>
+       <environmentVariable name="IsDemoVersion" value="false" />
        <environmentVariable name="Jwt__Key" value="PASTE_A_RANDOM_SECRET_OF_AT_LEAST_32_BYTES" />
+       <environmentVariable name="AspNetIdentity__DefaultAdmin__Password" value="PASTE_A_PASSWORD_OF_AT_LEAST_12_CHARACTERS" />
      </environmentVariables>
    </aspNetCore>
    ```
 
-   Keep `web.config` out of version control when it contains the real secret, and give every deployment its own key.
+   Keep `web.config` out of version control when it contains the real secrets, and give every deployment its own values.
 
 > For detailed instructions, refer to [Microsoft's official IIS deployment documentation](https://learn.microsoft.com/en-us/aspnet/core/tutorials/publish-to-iis).  
 
 
 
+
+# Unit Tests
+
+Fast regression tests for `TokenSettingsValidation`, `DefaultAdminCredentialPolicy`, and `StoragePathGuard` (empty, demo, production, traversal, and valid values):
+
+```powershell
+dotnet test Tests/Unit/Unit.csproj -c Debug
+```
 
 # E2E Tests (Playwright)
 
@@ -167,14 +218,15 @@ End-to-end tests use **Playwright for .NET** with **NUnit** (`Tests/E2E`). They 
 
 Test fixtures:
 - `LoginTests` - valid and invalid credentials.
+- `FileDownloadSecurityTests` - the document and image endpoints reject names that try to leave the storage folder.
 - `UiSmokeTests` - home, login, profile, warehouse list, and dashboard pages.
 - `WarehouseCrudTests`, `CustomerCrudTests`, `VendorCrudTests`, `ProductCrudTests` - required-name validation plus create, update, and delete through the list page modal.
 
 Prerequisites:
 - .NET 10 SDK
 - SQL Server Express running as `localhost\SQLEXPRESS` with a `dev`/`dev` login (the tests create/use the `WHMS-LTE-FS-E2E` database; if `dev` lacks `dbcreator`, the existing `WHMS-LTE-FS` database is used)
-- Demo seeding enabled (`IsDemoVersion=true`) and the default admin `admin@root.com` / `123456`
-- No JWT key is needed: the test fixture starts the application with a random `Jwt__Key` for every run, so the suite never depends on a committed or local secret
+- Demo seeding enabled (`IsDemoVersion=true`)
+- No secret is needed: the fixture starts the application with a random `Jwt__Key` and a test-only `AspNetIdentity__DefaultAdmin__Password` for the local test database, so the suite never depends on a committed or local secret. An existing `WHMS-LTE-FS-E2E` database whose administrator still uses the password of an earlier release is rotated by the application at start up.
 
 Run everything with one command:
 
@@ -188,6 +240,8 @@ The script installs the Chromium browser, builds the solution in `Debug`, starts
 - **URL**: [https://whms-lte-fs.csharpasp.net/](https://whms-lte-fs.csharpasp.net/)
 - ✅ **Username**: admin@root.com  
 - ✅ **Password**: 123456  
+
+> **Demo credentials only.** They work while `IsDemoVersion=true` and must never be used for a production deployment. Production requires `IsDemoVersion=false` plus a deployment specific admin password and JWT key; see [Demo Mode and Production Configuration](#demo-mode-and-production-configuration).
 
 
 

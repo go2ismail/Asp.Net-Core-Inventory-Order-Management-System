@@ -33,9 +33,6 @@ public static class DI
             var roleSeeder = serviceProvider.GetRequiredService<RoleSeeder>();
             roleSeeder.GenerateDataAsync().Wait();
 
-            var userAdminSeeder = serviceProvider.GetRequiredService<UserAdminSeeder>();
-            userAdminSeeder.GenerateDataAsync().Wait();
-
             var companySeeder = serviceProvider.GetRequiredService<CompanySeeder>();
             companySeeder.GenerateDataAsync().Wait();
 
@@ -43,6 +40,12 @@ public static class DI
             systemWarehouseSeeder.GenerateDataAsync().Wait();
 
         }
+
+        //>>> The administrator account is verified on every start up, so an installation that still uses
+        //>>> the password of an earlier release rotates it instead of keeping a publicly known credential.
+        //>>> GetAwaiter().GetResult() rethrows the original exception, .Wait() would wrap it in an AggregateException.
+        var userAdminSeeder = serviceProvider.GetRequiredService<UserAdminSeeder>();
+        userAdminSeeder.GenerateDataAsync().GetAwaiter().GetResult();
 
         return host;
     }

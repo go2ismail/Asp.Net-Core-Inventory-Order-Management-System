@@ -140,22 +140,33 @@ ls -la
 
 ## 🚀 Step 8 — Create the `.env` File (Required)
 
-The application does **not** ship a JWT signing key, it must be supplied by the deployment. Docker Compose reads the `.env` file next to `docker-compose.yml`:
+This guide deploys the **production stack**: `docker-compose.yml` sets `IsDemoVersion=false`, so the published demo credentials are rejected. The application does **not** ship any production secret; they must be supplied by the deployment. Docker Compose reads the `.env` file next to `docker-compose.yml`:
 
 ```bash
 # Generate a random signing key and store it in .env
-# PowerShell is available on Ubuntu as pwsh, otherwise use openssl:
-echo "Jwt__Key=$(openssl rand -base64 48 | tr '+/' '-_' | tr -d '=')" > .env
+# PowerShell is available on Ubuntu as pwsh, otherwise use openssl.
+# With pwsh, one command writes both secrets and IsDemoVersion=false:
+#   pwsh scripts/new-secrets.ps1
 
-# Make sure only your user can read the secret
+echo "IsDemoVersion=false" > .env
+echo "Jwt__Key=$(openssl rand -base64 48 | tr '+/' '-_' | tr -d '=')" >> .env
+
+# Password of the administrator account (admin@root.com) that is created on the first start up.
+# At least 12 characters. Do not reuse the password that earlier releases published.
+echo "AspNetIdentity__DefaultAdmin__Password=$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)" >> .env
+
+# Make sure only your user can read the secrets
 chmod 600 .env
 
-# Verify that the key is present (do not paste it into chat or tickets)
+# Verify that both values are present (do not paste them into chat or tickets)
 grep -c '^Jwt__Key=' .env
+grep -c '^AspNetIdentity__DefaultAdmin__Password=' .env
 ```
 
-> **Why?** A signing key that is stored in the repository is public knowledge, and anybody could mint tokens with the `Users` role. The `.env` file is ignored by git and by Docker, so the secret stays on the server.
-> **Note:** `docker compose` stops with `Jwt__Key is not set` when this file is missing. Every deployment needs its own key; changing it signs out all users.
+> **Why?** A signing key that is stored in the repository is public knowledge, and anybody could mint tokens with the `Users` role. The same is true for a published administrator password. The `.env` file is ignored by git and by Docker, so the secrets stay on the server.
+> **Note:** `docker compose` stops with `Jwt__Key is not set` or `AspNetIdentity__DefaultAdmin__Password is not set` when this file is missing. Every deployment needs its own values; changing the key signs out all users.
+> **Upgrading an existing deployment:** when the container's administrator account still uses the password that earlier releases published, the value in `.env` replaces it at the next start up (check `sudo docker logs wms-api` for the rotation warning).
+> **Just want to try the app?** Do not use this production stack with demo values. Run `sudo docker compose -f docker-compose.demo.yml up -d --build` instead; it starts with `IsDemoVersion=true` and the documented `admin@root.com` / `123456` demo login. Never store real data in it.
 
 ---
 
@@ -182,7 +193,7 @@ sudo docker compose up -d
 
 ---
 
-## 🚀 Step 9 — Check Container Status
+## 🚀 Step 10 — Check Container Status
 
 ```bash
 # List running containers
@@ -200,7 +211,7 @@ def456         mcr.microsoft.com/mssql/server:2022-express   Up 2 minutes   1433
 
 ---
 
-## 🚀 Step 10 — View Logs (if there are issues)
+## 🚀 Step 11 — View Logs (if there are issues)
 
 If something goes wrong, check the logs:
 
@@ -217,7 +228,7 @@ sudo docker logs -f wms-api
 
 ---
 
-## 🚀 Step 11 — Access the Application
+## 🚀 Step 12 — Access the Application
 
 Open a browser on your computer and go to:
 
@@ -232,13 +243,15 @@ http://123.123.123.123:5000
 
 > ⚠️ **IMPORTANT:** Make sure port 5000 is allowed in your **VPS firewall** (usually configured in your cloud provider panel like DigitalOcean, Linode, AWS, etc.).
 
-**Default login credentials:**
-- **Email:** admin@root.com
-- **Password:** 123456
+**Login credentials for the administrator account:**
+- **Email:** `admin@root.com` (or the `AspNetIdentity__DefaultAdmin__Email` you set)
+- **Password:** the `AspNetIdentity__DefaultAdmin__Password` value from your `.env` file
+
+> ⚠️ Never publish this password: the repository does not ship one, and a deployment that still uses the password of an earlier release rotates it on the next start up.
 
 ---
 
-## 🛑 Step 12 — Stop / Start the Application
+## 🛑 Step 13 — Stop / Start the Application
 
 ```bash
 # Stop containers (app & database still exist, data is safe)
@@ -256,7 +269,7 @@ sudo docker compose down -v
 
 ---
 
-## 🔄 Step 13 — Update to a New Version
+## 🔄 Step 14 — Update to a New Version
 
 When there are code changes on GitHub, update the app:
 
@@ -275,7 +288,7 @@ sudo docker compose up -d --build
 
 ---
 
-## 💾 Step 14 — Backup the Database
+## 💾 Step 15 — Backup the Database
 
 To backup the SQL Server database:
 
@@ -295,7 +308,7 @@ sudo docker cp wms-sqlserver:/var/opt/mssql/backup.bak ~/backup-wms.bak
 
 ---
 
-## 🧹 Step 15 — Uninstall (remove everything)
+## 🧹 Step 16 — Uninstall (remove everything)
 
 ```bash
 # Stop & remove containers + volumes (⚠️ DATA LOST)
@@ -359,13 +372,14 @@ Then log out and log back in.
 ```
 Asp.Net-Core-Inventory-Order-Management-System/
 ├── Dockerfile                     ← Build instructions for the app image
-├── docker-compose.yml             ← Container configuration (app + SQL)
+├── docker-compose.yml             ← Production stack (IsDemoVersion=false)
+├── docker-compose.demo.yml        ← Self-contained demo stack (IsDemoVersion=true)
 ├── .dockerignore                  ← Files excluded from the build
 ├── README_DOCKER_DEPLOYMENT.md    ← This guide
 └── Presentation/
     └── ASPNET/
-        ├── appsettings.json       ← Dev config (SQL via localhost)
-        └── appsettings.Docker.json ← Docker config (SQL via service name)
+        ├── appsettings.json       ← Dev config (SQL via localhost, demo mode by default)
+        └── appsettings.Docker.json ← Docker config (SQL via service name, production mode)
 ```
 
 ---

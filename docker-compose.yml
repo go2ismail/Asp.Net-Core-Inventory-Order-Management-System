@@ -24,9 +24,15 @@ services:
       - "5000:5000"
     environment:
       ASPNETCORE_ENVIRONMENT: Docker
+      # This compose file is the production stack. It refuses to fall back to the demo credentials.
+      IsDemoVersion: "false"
       # Signing key for the access tokens. Compose reads it from the .env file next to this file
       # (see .env.example) or from the environment of the host. Start up fails when it is missing.
       Jwt__Key: "${Jwt__Key:?Jwt__Key is not set. Create a .env file with Jwt__Key=<secret>, see .env.example}"
+      # Password of the administrator account that is created on the first start up. Start up fails
+      # when the stored account still uses the password of an earlier release and this value is missing.
+      AspNetIdentity__DefaultAdmin__Email: "${AspNetIdentity__DefaultAdmin__Email:-admin@root.com}"
+      AspNetIdentity__DefaultAdmin__Password: "${AspNetIdentity__DefaultAdmin__Password:?AspNetIdentity__DefaultAdmin__Password is not set. Create a .env file with AspNetIdentity__DefaultAdmin__Password=<password of at least 12 characters>, see .env.example}"
     depends_on:
       sqlserver:
         condition: service_healthy

@@ -7,8 +7,9 @@ namespace E2E;
 
 public abstract class E2ETestBase : PageTest
 {
-    protected const string AdminEmail = "admin@root.com";
-    protected const string AdminPassword = "123456";
+    protected static string AdminEmail => E2EServerFixture.AdminEmail;
+
+    protected static string AdminPassword => E2EServerFixture.AdminPassword;
 
     protected static string BaseUrl => E2EServerFixture.BaseUrl;
 
@@ -72,6 +73,31 @@ public abstract class E2ETestBase : PageTest
         Assert.That(isAuthenticated, Is.True, "localStorage.isAuthenticated should be true after login.");
 
         await Expect(Page.Locator("#userEmail")).ToHaveTextAsync(AdminEmail);
+    }
+
+    /// <summary>
+    /// Reads the access token that the sign in page stored, so a test can call the API directly.
+    /// </summary>
+    protected async Task<string> GetAccessTokenAsync()
+    {
+        // StorageManager serializes every value, so the raw token keeps its JSON quotes.
+        var storedToken = await Page.EvaluateAsync<string?>("() => localStorage.getItem('accessToken')");
+        Assert.That(storedToken, Is.Not.Null.And.Not.Empty, "localStorage.accessToken should be set after login.");
+
+        return storedToken!.Trim('"');
+    }
+
+    protected async Task<IAPIResponse> GetWithAccessTokenAsync(string relativeUrl)
+    {
+        var accessToken = await GetAccessTokenAsync();
+
+        return await Page.APIRequest.GetAsync($"{BaseUrl}{relativeUrl}", new APIRequestContextOptions
+        {
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = $"Bearer {accessToken}"
+            }
+        });
     }
 
     protected async Task GotoWarehouseListAsync()

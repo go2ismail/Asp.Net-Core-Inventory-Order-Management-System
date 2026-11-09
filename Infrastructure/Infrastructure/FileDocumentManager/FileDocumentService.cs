@@ -1,12 +1,15 @@
 ﻿using Application.Common.Repositories;
 using Application.Common.Services.FileDocumentManager;
 using Domain.Entities;
+using Infrastructure.FileStorage;
 using Microsoft.Extensions.Options;
 
 namespace Infrastructure.FileDocumentManager;
 
 public class FileDocumentService : IFileDocumentService
 {
+    private const string PlaceholderFileName = "nodocument.txt";
+
     private readonly IUnitOfWork _unitOfWork;
     private readonly string _folderPath;
     private readonly int _maxFileSizeInBytes;
@@ -77,12 +80,12 @@ public class FileDocumentService : IFileDocumentService
 
     public async Task<byte[]> GetFileAsync(string fileName, CancellationToken cancellationToken = default)
     {
-        var filePath = Path.Combine(_folderPath, fileName);
-
-        if (!File.Exists(filePath))
-        {
-            filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "nodocument.txt");
-        }
+        // The name comes from the caller, so it is resolved through the guard: a value that tries to
+        // leave the storage folder is treated as a missing document instead of a path to read.
+        var filePath = StoragePathGuard.TryResolveInsideFolder(_folderPath, fileName, out var resolvedPath)
+            && File.Exists(resolvedPath)
+            ? resolvedPath
+            : Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", PlaceholderFileName);
 
         var result = await File.ReadAllBytesAsync(filePath, cancellationToken);
 
