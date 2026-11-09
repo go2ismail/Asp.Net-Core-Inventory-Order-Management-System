@@ -108,6 +108,23 @@ For deployment to IIS:
 
 
 
+# E2E Tests (Playwright)
+
+End-to-end tests use **Playwright for .NET** with **NUnit** (`Tests/E2E`). They exercise login, warehouse CRUD, and UI smoke flows against a locally started application.
+
+Prerequisites:
+- .NET 10 SDK
+- SQL Server Express running as `localhost\SQLEXPRESS` with a `dev`/`dev` login (the tests create/use the `WHMS-LTE-FS-E2E` database; if `dev` lacks `dbcreator`, the existing `WHMS-LTE-FS` database is used)
+- Demo seeding enabled (`IsDemoVersion=true`) and the default admin `admin@root.com` / `123456`
+
+Run everything with one command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-e2e.ps1
+```
+
+The script installs the Chromium browser, builds the solution in `Debug`, starts the app on `http://127.0.0.1:5187`, and runs all tests. Set `E2E_BASE_URL` to test an already running instance, or `E2E_DB_NAME` to use a different database.
+
 # Live Demo Link
 - **URL**: [https://whms-lte-fs.csharpasp.net/](https://whms-lte-fs.csharpasp.net/)
 - ✅ **Username**: admin@root.com  
