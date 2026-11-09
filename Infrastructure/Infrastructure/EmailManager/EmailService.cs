@@ -19,10 +19,25 @@ public class EmailService : IEmailService
 
     public async Task SendEmailAsync(string email, string subject, string htmlMessage)
     {
+        if (string.IsNullOrWhiteSpace(_smtpSettings.Host)
+            || string.IsNullOrWhiteSpace(_smtpSettings.UserName)
+            || string.IsNullOrWhiteSpace(_smtpSettings.Password))
+        {
+            _logger.LogWarning("SMTP settings are incomplete, so the email was not sent.");
+            return;
+        }
+
         try
         {
+            var fromAddress = string.IsNullOrWhiteSpace(_smtpSettings.FromAddress)
+                ? _smtpSettings.UserName
+                : _smtpSettings.FromAddress;
+            var fromName = string.IsNullOrWhiteSpace(_smtpSettings.FromName)
+                ? "noreply"
+                : _smtpSettings.FromName;
+
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("noreply", _smtpSettings.UserName));
+            message.From.Add(new MailboxAddress(fromName, fromAddress));
             message.To.Add(new MailboxAddress(email, email));
             message.Subject = subject;
 

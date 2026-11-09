@@ -82,7 +82,7 @@ The application has two explicit modes, controlled by the `IsDemoVersion` settin
 
 **A fresh clone runs in demo mode.** It starts without a `.env` file and without any environment variables, creates the database, seeds the demo data, and accepts the documented demo credentials. The application logs a prominent warning at start up while demo mode is enabled.
 
-> **Never use demo mode with real data.** If `IsDemoVersion=true` is left enabled in production, the published `123456` administrator password and the demo signing key stay valid. A production deployment must set `IsDemoVersion=false` and provide both secrets.
+> **Never use demo mode with real data.** If `IsDemoVersion=true` is left enabled in production, the published `123456` administrator password and the demo signing key stay valid. A production deployment must set `IsDemoVersion=false` and provide the required secrets.
 
 ## Production secrets
 
@@ -99,13 +99,13 @@ The application has two explicit modes, controlled by the `IsDemoVersion` settin
 | `.env` file | `Jwt__Key=<secret>` in `<repo>/.env` (or `Presentation/ASPNET/.env`) | local development, Docker Compose |
 | `dotnet user-secrets` | `dotnet user-secrets set "Jwt:Key" "<secret>" --project Presentation/ASPNET` | local development without a file |
 
-Generate both secrets and switch the application to production mode with one command (creates or updates `<repo>/.env`):
+Generate the secrets and switch the application to production mode with one command (creates or updates `<repo>/.env`):
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/new-secrets.ps1
 ```
 
-The script writes `IsDemoVersion=false`, a random `Jwt__Key` of at least 32 bytes, and a random `AspNetIdentity__DefaultAdmin__Password` of at least 12 characters. The individual helpers `scripts/new-jwt-key.ps1` and `scripts/new-admin-password.ps1` remain available when only one value needs to change.
+The script writes `IsDemoVersion=false`, a random `Jwt__Key` of at least 32 bytes, a random `AspNetIdentity__DefaultAdmin__Password` of at least 12 characters, and a random `MSSQL_SA_PASSWORD` for Docker Compose. `docker-compose.yml` passes the SQL Server password to both containers, so it is never stored in `appsettings.Docker.json`. The individual helpers `scripts/new-jwt-key.ps1` and `scripts/new-admin-password.ps1` remain available when only one value needs to change.
 
 Or, on Linux and macOS:
 
@@ -114,6 +114,7 @@ Or, on Linux and macOS:
   echo "IsDemoVersion=false"
   echo "Jwt__Key=$(openssl rand -base64 48 | tr '+/' '-_' | tr -d '=')"
   echo "AspNetIdentity__DefaultAdmin__Password=$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)"
+  echo "MSSQL_SA_PASSWORD=$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)"
 } > .env
 ```
 
@@ -140,11 +141,18 @@ To try the application without installing SQL Server or creating any secret, run
 docker compose -f docker-compose.demo.yml up --build
 ```
 
-Open `http://localhost:5000` and sign in with `admin@root.com` / `123456`. The stack runs with `IsDemoVersion=true`, the demo key, and demo data. Do not store real data in it, and do not use it as a production deployment.
+Open `http://localhost:5000` and sign in with `admin@root.com` / `123456`. The stack runs with `IsDemoVersion=true`, the demo key, and demo data. Its SQL Server password defaults to a published demo value; set `MSSQL_SA_PASSWORD` to override it. Do not store real data in it, and do not use it as a production deployment.
 
 ### Uploaded files
 
 The document and image endpoints only serve file names that were generated on upload. A name with a directory part, a drive, or a parent directory segment (`../../appsettings.json`, `C:\Windows\win.ini`, `/etc/passwd`) is rejected with `400 Bad Request`, and the storage service additionally verifies that the canonical path is a child of the configured `PathFolder` before it reads a byte. Keep `FileImageManager:PathFolder` and `FileDocumentManager:PathFolder` outside the folders that hold configuration files.
+
+### Known follow-ups
+
+- **Static uploaded files:** uploads still live under `wwwroot/app_data`, so a file is reachable without authentication when its generated GUID name is known. The API endpoints enforce authentication; moving the storage folders outside the web root is a separate migration.
+- **Regular user password policy:** production only enforces the 12-character minimum for the administrator. The global Identity policy in `appsettings.json` still allows 6-character user passwords; raising it is a separate change.
+- **AutoMapper:** `AutoMapper` remains on 13.0.1 because every patched release (15.1.1 and later) is distributed under RPL 1.5 or a commercial license. The advisory is a denial-of-service that requires mapping an attacker-controlled deeply nested object graph; this application maps database entities and fixed request DTOs, and `System.Text.Json` limits request nesting. Upgrading needs a licensing decision.
+- The `MailKit`/`MimeKit` (4.18.2) and `System.Security.Cryptography.Pkcs` (10.0.14) references contain the current security fixes.
 
 ---
 
