@@ -24,6 +24,9 @@ services:
       - "5000:5000"
     environment:
       ASPNETCORE_ENVIRONMENT: Docker
+      # Signing key for the access tokens. Compose reads it from the .env file next to this file
+      # (see .env.example) or from the environment of the host. Start up fails when it is missing.
+      Jwt__Key: "${Jwt__Key:?Jwt__Key is not set. Create a .env file with Jwt__Key=<secret>, see .env.example}"
     depends_on:
       sqlserver:
         condition: service_healthy

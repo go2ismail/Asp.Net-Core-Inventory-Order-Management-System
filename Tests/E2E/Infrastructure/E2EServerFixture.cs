@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
+using System.Security.Cryptography;
 using NUnit.Framework;
 
 namespace E2E;
@@ -63,6 +64,8 @@ public class E2EServerFixture
             $"Server=localhost\\SQLEXPRESS;Database={databaseName};User=dev;Password=dev;TrustServerCertificate=True;";
         startInfo.Environment["IsDemoVersion"] = "true";
         startInfo.Environment["AspNetIdentity__Lockout__MaxFailedAccessAttempts"] = "1000";
+        // A random key per run: the tests never depend on a committed or local secret.
+        startInfo.Environment["Jwt__Key"] = CreateRandomJwtKey();
 
         _server = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
         _server.OutputDataReceived += (_, args) => AppendLog(logFile, args.Data);
@@ -104,6 +107,13 @@ public class E2EServerFixture
             _server.Dispose();
             _server = null;
         }
+    }
+
+    private static string CreateRandomJwtKey()
+    {
+        var keyBytes = RandomNumberGenerator.GetBytes(48);
+
+        return Convert.ToBase64String(keyBytes).Replace('+', '-').Replace('/', '_').TrimEnd('=');
     }
 
     private static async Task WaitUntilRespondingAsync(TimeSpan timeout, bool throwOnExit)

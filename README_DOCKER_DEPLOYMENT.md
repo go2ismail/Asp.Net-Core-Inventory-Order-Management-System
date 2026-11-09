@@ -138,7 +138,28 @@ ls -la
 
 ---
 
-## 🚀 Step 8 — Run Docker Compose
+## 🚀 Step 8 — Create the `.env` File (Required)
+
+The application does **not** ship a JWT signing key, it must be supplied by the deployment. Docker Compose reads the `.env` file next to `docker-compose.yml`:
+
+```bash
+# Generate a random signing key and store it in .env
+# PowerShell is available on Ubuntu as pwsh, otherwise use openssl:
+echo "Jwt__Key=$(openssl rand -base64 48 | tr '+/' '-_' | tr -d '=')" > .env
+
+# Make sure only your user can read the secret
+chmod 600 .env
+
+# Verify that the key is present (do not paste it into chat or tickets)
+grep -c '^Jwt__Key=' .env
+```
+
+> **Why?** A signing key that is stored in the repository is public knowledge, and anybody could mint tokens with the `Users` role. The `.env` file is ignored by git and by Docker, so the secret stays on the server.
+> **Note:** `docker compose` stops with `Jwt__Key is not set` when this file is missing. Every deployment needs its own key; changing it signs out all users.
+
+---
+
+## 🚀 Step 9 — Run Docker Compose
 
 This is the most important step — it starts the application and the database:
 

@@ -5,3 +5,6 @@ obj/
 .gitignore
 *.md
 LICENSE.txt
+# Secrets are provided at runtime, they must never be baked into an image
+.env
+.env.*

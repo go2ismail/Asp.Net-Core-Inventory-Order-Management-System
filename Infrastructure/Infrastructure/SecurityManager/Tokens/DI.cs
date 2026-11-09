@@ -12,8 +12,11 @@ public static class DI
 {
     public static IServiceCollection RegisterToken(this IServiceCollection services, IConfiguration configuration)
     {
-        var jwtSectionName = "Jwt";
-        services.Configure<TokenSettings>(configuration.GetSection(jwtSectionName));
+        // The key is a deployment secret (environment variable, .env file, or user secrets),
+        // never a value from appsettings.json. A missing or published key stops the start up here.
+        var tokenSettings = TokenSettingsValidation.GetValidated(configuration);
+
+        services.Configure<TokenSettings>(configuration.GetSection(TokenSettingsValidation.SectionName));
 
         services.AddAuthentication(options =>
         {
@@ -22,27 +25,24 @@ public static class DI
         })
         .AddJwtBearer(options =>
         {
-            var tokenSettings = configuration.GetSection(jwtSectionName).Get<TokenSettings>();
-
-            if (tokenSettings?.Key.Length < 32)
-            {
-                throw new Exception("JWT key should be minimal 32 character");
-            }
-
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ClockSkew = TimeSpan.FromMinutes(tokenSettings?.ClockSkewInMinute ?? 5),
-                ValidIssuer = tokenSettings?.Issuer,
-                ValidAudience = tokenSettings?.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSettings?.Key ?? throw new ArgumentNullException("JWT Key is empty")))
+                ClockSkew = TimeSpan.FromMinutes(tokenSettings.ClockSkewInMinute),
+                ValidIssuer = tokenSettings.Issuer,
+                ValidAudience = tokenSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSettings.Key))
             };
 
             options.Events = new JwtBearerEvents
             {
+                // Authorization uses the current account and role state instead of the claims that
+                // were baked into the token, see LiveUserClaimsValidator.
+                OnTokenValidated = LiveUserClaimsValidator.ValidateAsync,
+
                 // Prioritizing HttpOnly cookie before checking Authorization header
                 OnMessageReceived = context =>
                 {

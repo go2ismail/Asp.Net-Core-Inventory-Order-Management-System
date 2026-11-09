@@ -5,6 +5,10 @@ TestResults/
 *.trx
 playwright-report/
 test-results/
+# Local secrets, see .env.example and the "Configuration and Secrets" section in README.md
+.env
+.env.*
+!.env.example
 Presentation/ASPNET/wwwroot/app_data/logs/*
 !Presentation/ASPNET/wwwroot/app_data/logs/keep.txt
 Presentation/ASPNET/wwwroot/app_data/images/*
