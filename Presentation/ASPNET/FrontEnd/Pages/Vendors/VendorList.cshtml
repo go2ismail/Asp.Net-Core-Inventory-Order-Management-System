@@ -31,7 +31,7 @@
                                 <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label for="Name">Name</label>
-                                        <input ref="nameRef" v-model="state.name" class="form-control" placeholder="" />
+                                        <input ref="nameRef" id="Name" v-model="state.name" class="form-control" placeholder="" />
                                         <label class="text-danger" v-text="state.errors.name"></label>
                                     </div>
                                     <div class="col-md-6">
@@ -42,19 +42,19 @@
                                 <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label for="VendorGroupId">Vendor Group</label>
-                                        <div ref="vendorGroupIdRef"></div>
+                                        <div ref="vendorGroupIdRef" id="VendorGroupId"></div>
                                         <label class="text-danger" v-text="state.errors.vendorGroupId"></label>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="VendorCategoryId">Vendor Category</label>
-                                        <div ref="vendorCategoryIdRef"></div>
+                                        <div ref="vendorCategoryIdRef" id="VendorCategoryId"></div>
                                         <label class="text-danger" v-text="state.errors.vendorCategoryId"></label>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-12">
                                         <label for="Description">Description</label>
-                                        <textarea v-model="state.description" class="form-control" rows="3" placeholder=""></textarea>
+                                        <textarea id="Description" v-model="state.description" class="form-control" rows="3" placeholder=""></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -67,31 +67,31 @@
                                 <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label for="Street">Street</label>
-                                        <input ref="streetRef" v-model="state.street" class="form-control" placeholder="" />
+                                        <input ref="streetRef" id="Street" v-model="state.street" class="form-control" placeholder="" />
                                         <label class="text-danger" v-text="state.errors.street"></label>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="City">City</label>
-                                        <input ref="cityRef" v-model="state.city" class="form-control" placeholder="" />
+                                        <input ref="cityRef" id="City" v-model="state.city" class="form-control" placeholder="" />
                                         <label class="text-danger" v-text="state.errors.city"></label>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label for="State">State</label>
-                                        <input ref="stateRef" v-model="state.state" class="form-control" placeholder="" />
+                                        <input ref="stateRef" id="State" v-model="state.state" class="form-control" placeholder="" />
                                         <label class="text-danger" v-text="state.errors.state"></label>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="ZipCode">Zip Code</label>
-                                        <input ref="zipCodeRef" v-model="state.zipCode" class="form-control" placeholder="" />
+                                        <input ref="zipCodeRef" id="ZipCode" v-model="state.zipCode" class="form-control" placeholder="" />
                                         <label class="text-danger" v-text="state.errors.zipCode"></label>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label for="Country">Country</label>
-                                        <input ref="countryRef" v-model="state.country" class="form-control" placeholder="" />
+                                        <input ref="countryRef" id="Country" v-model="state.country" class="form-control" placeholder="" />
                                         <label class="text-danger" v-text="state.errors.country"></label>
                                     </div>
                                 </div>
@@ -105,7 +105,7 @@
                                 <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label for="PhoneNumber">Phone Number</label>
-                                        <input ref="phoneNumberRef" v-model="state.phoneNumber" class="form-control" placeholder="" />
+                                        <input ref="phoneNumberRef" id="PhoneNumber" v-model="state.phoneNumber" class="form-control" placeholder="" />
                                         <label class="text-danger" v-text="state.errors.phoneNumber"></label>
                                     </div>
                                     <div class="col-md-6">
@@ -117,7 +117,7 @@
                                 <div class="row mb-2">
                                     <div class="col-md-6">
                                         <label for="EmailAddress">Email</label>
-                                        <input ref="emailAddressRef" v-model="state.emailAddress" class="form-control" placeholder="" />
+                                        <input ref="emailAddressRef" id="EmailAddress" v-model="state.emailAddress" class="form-control" placeholder="" />
                                         <label class="text-danger" v-text="state.errors.emailAddress"></label>
                                     </div>
                                     <div class="col-md-6">

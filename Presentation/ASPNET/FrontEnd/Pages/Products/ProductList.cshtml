@@ -33,7 +33,7 @@
                                         <div class="row mb-2">
                                             <div class="col-md-6">
                                                 <label for="Name">Name</label>
-                                                <input ref="nameRef" v-model="state.name">
+                                                <input ref="nameRef" id="Name" v-model="state.name">
                                                 <label class="text-danger">{{ state.errors.name }}</label>
                                             </div>
                                             <div class="col-md-6">
@@ -44,19 +44,19 @@
                                         <div class="row mb-2">
                                             <div class="col-md-6">
                                                 <label for="UnitPrice">Unit Price</label>
-                                                <input ref="unitPriceRef" v-model="state.unitPrice">
+                                                <input ref="unitPriceRef" id="UnitPrice" v-model="state.unitPrice">
                                                 <label class="text-danger">{{ state.errors.unitPrice }}</label>
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="UnitMeasureId">Unit Measure</label>
-                                                <div ref="unitMeasureIdRef"></div>
+                                                <div ref="unitMeasureIdRef" id="UnitMeasureId"></div>
                                                 <label class="text-danger">{{ state.errors.unitMeasureId }}</label>
                                             </div>
                                         </div>
                                         <div class="row mb-2">
                                             <div class="col-md-6">
                                                 <label for="ProductGroupId">Product Group</label>
-                                                <div ref="productGroupIdRef"></div>
+                                                <div ref="productGroupIdRef" id="ProductGroupId"></div>
                                                 <label class="text-danger">{{ state.errors.productGroupId }}</label>
                                             </div>
                                             <div class="col-md-6">
