@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>indotalent-wms-aspnet</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
