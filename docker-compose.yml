@@ -1,6 +1,6 @@
 services:
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-express
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: wms-sqlserver
     environment:
       SA_PASSWORD: "YourStrong!Passw0rd"

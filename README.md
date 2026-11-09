@@ -3,7 +3,7 @@
 # 🔥 Introduction  
 Welcome to our **Warehouse Inventory Management System (WHMS)**, an innovative and scalable solution meticulously crafted to streamline and optimize your inventory operations.  
 
-Now powered by **ASP.NET Core 9.0**, the latest cutting-edge technology from Microsoft, WHMS is faster than ever and showcases the future of modern web development. With its fully decoupled **headless API** architecture, WHMS enables seamless integration between the back end and front end, offering unparalleled flexibility and performance.  
+Now powered by **ASP.NET Core 10.0**, the latest cutting-edge technology from Microsoft, WHMS is faster than ever and showcases the future of modern web development. With its fully decoupled **headless API** architecture, WHMS enables seamless integration between the back end and front end, offering unparalleled flexibility and performance.  
 
 The back end is built using **Clean Architecture**, **CQRS**, **MediatR**, and the **Repository Pattern**, ensuring maintainability and scalability for enterprise-grade applications. On the front end, **ASP.NET Core Razor Pages** and **Vue.js** come together to create a dynamic and user-friendly interface.  
 
@@ -14,7 +14,7 @@ WHMS provides a comprehensive suite of capabilities:
 - **Stock Count and Detailed Reporting Functionalities**  
 
 🎯 **Challenge Yourself!**  
-Experience the blazing speed and efficiency of **.NET 9**, the latest breakthrough in performance from Microsoft. Explore our **live online demo** today and see firsthand how WHMS can revolutionize your inventory management operations.  
+Experience the blazing speed and efficiency of **.NET 10**, the latest breakthrough in performance from Microsoft. Explore our **live online demo** today and see firsthand how WHMS can revolutionize your inventory management operations.  
 
 
 
@@ -27,7 +27,7 @@ Additionally, it simplifies **deployment**, as all code resides in a single repo
 
 
 # Technical Features
-- **ASP.NET Core 9.0 Headless API** (Back End)
+- **ASP.NET Core 10.0 Headless API** (Back End)
   - Clean Architecture
   - CQRS with MediatR
   - Repository Pattern
@@ -107,6 +107,23 @@ For deployment to IIS:
 
 
 
+
+# E2E Tests (Playwright)
+
+End-to-end tests use **Playwright for .NET** with **NUnit** (`Tests/E2E`). They exercise login, warehouse CRUD, and UI smoke flows against a locally started application.
+
+Prerequisites:
+- .NET 10 SDK
+- SQL Server Express running as `localhost\SQLEXPRESS` with a `dev`/`dev` login (the tests create/use the `WHMS-LTE-FS-E2E` database; if `dev` lacks `dbcreator`, the existing `WHMS-LTE-FS` database is used)
+- Demo seeding enabled (`IsDemoVersion=true`) and the default admin `admin@root.com` / `123456`
+
+Run everything with one command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-e2e.ps1
+```
+
+The script installs the Chromium browser, builds the solution in `Debug`, starts the app on `http://127.0.0.1:5187`, and runs all tests. Set `E2E_BASE_URL` to test an already running instance, or `E2E_DB_NAME` to use a different database.
 
 # Live Demo Link
 - **URL**: [https://whms-lte-fs.csharpasp.net/](https://whms-lte-fs.csharpasp.net/)
