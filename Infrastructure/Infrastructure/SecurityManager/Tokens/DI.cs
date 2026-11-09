@@ -12,9 +12,11 @@ public static class DI
 {
     public static IServiceCollection RegisterToken(this IServiceCollection services, IConfiguration configuration)
     {
-        // The key is a deployment secret (environment variable, .env file, or user secrets),
-        // never a value from appsettings.json. A missing or published key stops the start up here.
-        var tokenSettings = TokenSettingsValidation.GetValidated(configuration);
+        // Demo mode keeps the documented demo key from appsettings.json; production requires a
+        // deployment secret (environment variable, .env file, or user secrets) and rejects the demo
+        // key, an empty key, and a short key. Validation runs here, so a bad configuration stops the start up.
+        var isDemoVersion = configuration.GetValue<bool>("IsDemoVersion");
+        var tokenSettings = TokenSettingsValidation.GetValidated(configuration, isDemoVersion);
 
         services.Configure<TokenSettings>(configuration.GetSection(TokenSettingsValidation.SectionName));
 

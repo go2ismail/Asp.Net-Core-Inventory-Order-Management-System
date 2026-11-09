@@ -403,18 +403,20 @@ public class SecurityService : ISecurityService
             throw new Exception($"Unable to load user with id: {userId}");
         }
 
+        // The check has to run before the change: the demo relies on the published administrator
+        // credential staying valid for the public sign in page.
+        var isDemoVersion = _configuration.GetValue<bool>("IsDemoVersion");
+        if (isDemoVersion && user.Email == _identitySettings.DefaultAdmin.Email)
+        {
+            throw new Exception($"Update default admin password is not allowed in demo version.");
+        }
+
         var result = await _userManager.ChangePasswordAsync(user, oldPassword, newPassword);
 
         if (!result.Succeeded)
         {
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
             throw new Exception($"Password change failed: {errors}");
-        }
-
-        var isDemoVersion = _configuration.GetValue<bool>("IsDemoVersion");
-        if (isDemoVersion && user.Email == _identitySettings.DefaultAdmin.Email)
-        {
-            throw new Exception($"Update default admin password is not allowed in demo version.");
         }
     }
 

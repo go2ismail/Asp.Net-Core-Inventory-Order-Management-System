@@ -1,0 +1,57 @@
+# Self-contained demo stack: SQL Server + the application in demo mode.
+#
+# Use it to try the application without installing SQL Server or creating a .env file:
+#   docker compose -f docker-compose.demo.yml up --build
+# Then open http://localhost:5000 and sign in with admin@root.com / 123456.
+#
+# The demo credentials and the demo JWT key are intentionally public. Never store real data in
+# this stack, and never use it as a production deployment. For production use docker-compose.yml
+# with IsDemoVersion=false and the secrets from .env.example.
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: wms-demo-sqlserver
+    environment:
+      # Demo-only password. The production compose file reads its own secrets from .env.
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    volumes:
+      - mssql_data_wms_demo:/var/opt/mssql
+    networks:
+      - wms-demo-network
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "YourStrong!Passw0rd" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  api:
+    build: .
+    container_name: wms-demo-api
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      IsDemoVersion: "true"
+      # Public demo values, identical to the ones in appsettings.json.
+      Jwt__Key: "YourVeryStrongAndSecureSecretKeyWhichIs32Chars!"
+      AspNetIdentity__DefaultAdmin__Email: "admin@root.com"
+      AspNetIdentity__DefaultAdmin__Password: "123456"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - wms-demo-network
+    volumes:
+      - app_data_wms_demo:/app/wwwroot/app_data
+
+volumes:
+  mssql_data_wms_demo:
+  app_data_wms_demo:
+
+networks:
+  wms-demo-network:
+    driver: bridge

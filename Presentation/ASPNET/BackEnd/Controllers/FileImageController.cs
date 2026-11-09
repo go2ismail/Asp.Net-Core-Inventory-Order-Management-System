@@ -3,6 +3,7 @@ using Application.Features.FileImageManager.Queries;
 using ASPNET.BackEnd.Common.Base;
 using ASPNET.BackEnd.Common.Models;
 using Infrastructure.FileImageManager;
+using Infrastructure.FileStorage;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,6 +63,13 @@ public class FileImageController : BaseApiController
         [FromQuery] string imageName,
         CancellationToken cancellationToken)
     {
+        if (!string.IsNullOrEmpty(imageName) && !StoragePathGuard.IsPlainFileName(imageName))
+        {
+            // An image name is the file name that was generated on upload, so a path, a drive or a
+            // parent directory segment is rejected before it can reach the file system.
+            return BadRequest("Invalid image name.");
+        }
+
         if (string.IsNullOrEmpty(imageName) || Path.GetExtension(imageName) == string.Empty)
         {
             imageName = "noimage.png";

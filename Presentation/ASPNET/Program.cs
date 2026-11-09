@@ -21,6 +21,14 @@ builder.Services.AddFrontEndServices();
 
 var app = builder.Build();
 
+if (builder.Configuration.GetValue<bool>("IsDemoVersion"))
+{
+    // The demo mode intentionally accepts the published credentials, the demo signing key, and the
+    // demo seed data. Make that visible in every log so an accidental production deployment is noticed.
+    app.Logger.LogWarning(
+        "DEMO MODE IS ENABLED (IsDemoVersion=true). The published demo credentials and the demo JWT signing key are accepted, and demo data is seeded. Never use this mode with real data. Set IsDemoVersion=false and provide Jwt__Key and AspNetIdentity__DefaultAdmin__Password for a production deployment.");
+}
+
 if (dotEnvFile is not null)
 {
     // Never log the values, only the file that was used, so operators can see where the secrets came from.
