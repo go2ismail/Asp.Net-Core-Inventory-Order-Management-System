@@ -145,7 +145,7 @@ This guide deploys the **production stack**: `docker-compose.yml` sets `IsDemoVe
 ```bash
 # Generate a random signing key and store it in .env
 # PowerShell is available on Ubuntu as pwsh, otherwise use openssl.
-# With pwsh, one command writes both secrets and IsDemoVersion=false:
+# With pwsh, one command writes all secrets and IsDemoVersion=false:
 #   pwsh scripts/new-secrets.ps1
 
 echo "IsDemoVersion=false" > .env
@@ -155,16 +155,21 @@ echo "Jwt__Key=$(openssl rand -base64 48 | tr '+/' '-_' | tr -d '=')" >> .env
 # At least 12 characters. Do not reuse the password that earlier releases published.
 echo "AspNetIdentity__DefaultAdmin__Password=$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)" >> .env
 
+# SQL Server sa password and the password that the API uses in its connection string.
+# At least 8 characters with upper case, lower case, digit and symbol.
+echo "MSSQL_SA_PASSWORD=$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)" >> .env
+
 # Make sure only your user can read the secrets
 chmod 600 .env
 
-# Verify that both values are present (do not paste them into chat or tickets)
+# Verify that the values are present (do not paste them into chat or tickets)
 grep -c '^Jwt__Key=' .env
 grep -c '^AspNetIdentity__DefaultAdmin__Password=' .env
+grep -c '^MSSQL_SA_PASSWORD=' .env
 ```
 
-> **Why?** A signing key that is stored in the repository is public knowledge, and anybody could mint tokens with the `Users` role. The same is true for a published administrator password. The `.env` file is ignored by git and by Docker, so the secrets stay on the server.
-> **Note:** `docker compose` stops with `Jwt__Key is not set` or `AspNetIdentity__DefaultAdmin__Password is not set` when this file is missing. Every deployment needs its own values; changing the key signs out all users.
+> **Why?** A signing key that is stored in the repository is public knowledge, and anybody could mint tokens with the `Users` role. The same is true for a published administrator password or a published SQL Server password. The `.env` file is ignored by git and by Docker, so the secrets stay on the server.
+> **Note:** `docker compose` stops with `Jwt__Key is not set`, `AspNetIdentity__DefaultAdmin__Password is not set`, or `MSSQL_SA_PASSWORD is not set` when this file is missing. Every deployment needs its own values; changing the key signs out all users.
 > **Upgrading an existing deployment:** when the container's administrator account still uses the password that earlier releases published, the value in `.env` replaces it at the next start up (check `sudo docker logs wms-api` for the rotation warning).
 > **Just want to try the app?** Do not use this production stack with demo values. Run `sudo docker compose -f docker-compose.demo.yml up -d --build` instead; it starts with `IsDemoVersion=true` and the documented `admin@root.com` / `123456` demo login. Never store real data in it.
 
@@ -293,9 +298,12 @@ sudo docker compose up -d --build
 To backup the SQL Server database:
 
 ```bash
+# Load the SQL Server password from .env (values are shell-safe alphanumerics)
+set -a; . ./.env; set +a
+
 # Backup to .bak file inside the container
 sudo docker exec wms-sqlserver /opt/mssql-tools18/bin/sqlcmd \
-  -S localhost -U sa -P "YourStrong!Passw0rd" -C \
+  -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C \
   -Q "BACKUP DATABASE [WHMS-LTE-FS] TO DISK = N'/var/opt/mssql/backup.bak'"
 
 # Copy the backup file from container to VPS host
