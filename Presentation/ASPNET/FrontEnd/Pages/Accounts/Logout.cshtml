@@ -1,0 +1,42 @@
+﻿@page
+@{
+    ViewData["Title"] = "Logout";
+}
+
+<div class="container-fluid" id="app" v-cloak>
+
+    <div class="card-body login-card-body">
+        <p class="login-box-msg">@ViewData["Title"]</p>
+
+
+
+        <div class="social-auth-links text-center mb-3">
+            <div class="row">
+                <div class="col-md-12">
+                    <form v-on:submit.prevent="handleSubmit">
+                        <div class="form-group mb-2 text-center">
+                            <p>Are you sure you want to log out?</p>
+                            <p>Click the button below to confirm and log out completely.</p>
+                        </div>
+                        <button type="submit"
+                                v-bind:disabled="state.isSubmitting"
+                                class="btn btn-primary w-100 mb-2">
+                            <span class="spinner-border spinner-border-sm me-2"
+                                  v-if="state.isSubmitting"
+                                  role="status"
+                                  aria-hidden="true"></span>
+                            <span>{{ state.isSubmitting ? '...' : 'Log Out' }}</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+@section scripts {
+    <script src="~/FrontEnd/Pages/Accounts/Logout.cshtml.js"></script>
+}

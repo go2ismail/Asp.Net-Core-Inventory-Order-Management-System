@@ -1,0 +1,19 @@
+﻿@page
+@attribute [Authorize(Roles = "TransactionReports")]
+@{
+    ViewData["Title"] = "Transaction Report List";
+}
+
+<div id="app" v-cloak>
+    <div class="row">
+        <div class="col-12">
+            <div class="grid-container">
+                <div ref="mainGridRef"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/FrontEnd/Pages/TransactionReports/TransactionReportList.cshtml.js"></script>
+}

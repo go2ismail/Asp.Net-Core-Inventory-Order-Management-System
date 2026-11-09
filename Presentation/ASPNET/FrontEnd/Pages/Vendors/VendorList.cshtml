@@ -1,0 +1,229 @@
+﻿@page
+@attribute [Authorize(Roles = "Vendors")]
+@{
+    ViewData["Title"] = "Vendor List";
+}
+
+<div id="app" v-cloak>
+    <div class="row">
+        <div class="col-12">
+            <div class="grid-container">
+                <div ref="mainGridRef"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" ref="mainModalRef" id="MainModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" v-text="state.mainTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" v-model="state.id" id="Id" name="Id" />
+                    <form id="MainForm">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5>Main Info</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <label for="Name">Name</label>
+                                        <input ref="nameRef" v-model="state.name" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.name"></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="Number">Number</label>
+                                        <input ref="numberRef" v-model="state.number" class="form-control" placeholder="" readonly />
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <label for="VendorGroupId">Vendor Group</label>
+                                        <div ref="vendorGroupIdRef"></div>
+                                        <label class="text-danger" v-text="state.errors.vendorGroupId"></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="VendorCategoryId">Vendor Category</label>
+                                        <div ref="vendorCategoryIdRef"></div>
+                                        <label class="text-danger" v-text="state.errors.vendorCategoryId"></label>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-12">
+                                        <label for="Description">Description</label>
+                                        <textarea v-model="state.description" class="form-control" rows="3" placeholder=""></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5>Address</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <label for="Street">Street</label>
+                                        <input ref="streetRef" v-model="state.street" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.street"></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="City">City</label>
+                                        <input ref="cityRef" v-model="state.city" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.city"></label>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <label for="State">State</label>
+                                        <input ref="stateRef" v-model="state.state" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.state"></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="ZipCode">Zip Code</label>
+                                        <input ref="zipCodeRef" v-model="state.zipCode" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.zipCode"></label>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <label for="Country">Country</label>
+                                        <input ref="countryRef" v-model="state.country" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.country"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5>Communication</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <label for="PhoneNumber">Phone Number</label>
+                                        <input ref="phoneNumberRef" v-model="state.phoneNumber" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.phoneNumber"></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="FaxNumber">Fax Number</label>
+                                        <input ref="faxNumberRef" v-model="state.faxNumber" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.faxNumber"></label>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <label for="EmailAddress">Email</label>
+                                        <input ref="emailAddressRef" v-model="state.emailAddress" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.emailAddress"></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="Website">Website</label>
+                                        <input ref="websiteRef" v-model="state.website" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.website"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5>Social Media</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-md-4">
+                                        <label for="WhatsApp">WhatsApp</label>
+                                        <input ref="whatsAppRef" v-model="state.whatsApp" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.whatsApp"></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="LinkedIn">LinkedIn</label>
+                                        <input ref="linkedInRef" v-model="state.linkedIn" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.linkedIn"></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="Facebook">Facebook</label>
+                                        <input ref="facebookRef" v-model="state.facebook" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.facebook"></label>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-4">
+                                        <label for="Instagram">Instagram</label>
+                                        <input ref="instagramRef" v-model="state.instagram" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.instagram"></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="TwitterX">Twitter/X</label>
+                                        <input ref="twitterXRef" v-model="state.twitterX" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.twitterX"></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="TikTok">TikTok</label>
+                                        <input ref="tikTokRef" v-model="state.tikTok" class="form-control" placeholder="" />
+                                        <label class="text-danger" v-text="state.errors.tikTok"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button"
+                            id="MainSaveButton"
+                            class="btn"
+                            v-bind:class="state.deleteMode ? 'btn-danger' : 'btn-primary'"
+                            v-on:click="handler.handleSubmit"
+                            v-bind:disabled="state.isSubmitting">
+                        <span class="spinner-border spinner-border-sm me-2" v-if="state.isSubmitting" role="status" aria-hidden="true"></span>
+                        <span v-if="!state.isSubmitting">{{ state.deleteMode ? 'Delete' : 'Save' }}</span>
+                        <span v-else>{{ state.deleteMode ? 'Deleting...' : 'Saving...' }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" ref="manageContactModalRef" id="ManageContactModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" v-text="state.manageContactTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" v-model="state.id" id="Id" name="Id" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Vendor Contact</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="grid-container">
+                                                <div ref="secondaryGridRef"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/FrontEnd/Pages/Vendors/VendorList.cshtml.js"></script>
+}

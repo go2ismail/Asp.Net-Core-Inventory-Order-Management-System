@@ -1,0 +1,39 @@
+﻿ => FREE BUSINESS APP LICENSE BY INDOTALENT
+
+ All free Business Application by INDOTALENT are licensed under a Creative Commons Attribution 4.0 International License which means you are not allowed to remove the author�s credit link/attribution link/backlink.
+
+ When you download or use our free Business Application, it will attribute the following conditions.
+
+
+ => YOU ARE ALLOWED
+
+      1. You are allowed to use for your personal and commercial purposes.
+
+      2. You are allowed to modify/customize however you like.
+
+      3. You are allowed to convert/port for use for any CMS.
+
+      4. You are allowed to share/distribute under the INDOTALENT brand name.
+
+      5. You are allowed to put a screenshot or a link on your blog posts or any other websites.
+
+
+ => YOU ARE NOT ALLOWED
+
+      1. You are not allowed to remove the author�s credit link/attribution link/backlink without purchasing Credit Removal License ( https://store.indotalent.com ).
+
+      2. You are not allowed to sell, resale, rent, lease, license, or sub-license.
+
+      3. You are not allowed to upload to any third party websites without our permission.
+
+
+ => This app using Syncfusion Community Edition: https://www.syncfusion.com/products/communitylicense
+
+ => This app using AdminLTE admin template: https://adminlte.io/
+
+
+ => This license can be terminated if you breach any of these conditions.
+
+
+ => PURCHASE CREDIT REMOVAL LICENSE ( https://store.indotalent.com )
+

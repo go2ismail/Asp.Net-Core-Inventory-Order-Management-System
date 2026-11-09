@@ -1,0 +1,374 @@
+﻿<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="~/adminlte/plugins/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="~/adminlte/css/adminlte.min.css">
+
+
+<link href="~/lib/syncfusion/css/bootstrap5.css" rel="stylesheet" />
+<script src="~/lib/syncfusion/js/ej2.min.js"></script>
+
+<link href="~/lib/font-awesome/css/all.min.css" rel="stylesheet">
+<link href="~/lib/bootstrap/dist/css/bootstrap-icons.css" rel="stylesheet">
+<link href="~/lib/dropzone/dropzone.min.css" rel="stylesheet">
+
+
+<style>
+    /* CUSTOM */
+
+    /*Form Group*/
+    .form-group {
+        margin-top: 10px;
+    }
+
+    /* For Syncfusion Grid */
+    .grid-container .e-gridcontent {
+        cursor: pointer;
+    }
+
+    .e-grid .e-row.e-altrow {
+        background-color: #F3F6F9;
+    }
+
+    .e-headertext {
+        padding-left: 5px;
+    }
+
+    .e-grid .e-gridpager .e-currentitem {
+        background-color: var(--primary);
+        color: #fff !important;
+    }
+
+    .e-grid .e-gridpager .e-numericitem {
+        color: var(--primary);
+    }
+
+    .e-contextmenu-wrapper ul .e-menu-item.e-selected, .e-contextmenu-container ul .e-menu-item.e-selected {
+        background-color: var(--primary);
+        color: #fff;
+        outline: 0 solid var(--primary);
+        outline-offset: 0;
+    }
+
+    .e-checkbox-wrapper .e-frame.e-stop, .e-css.e-checkbox-wrapper .e-frame.e-stop {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+
+    .e-checkbox-wrapper .e-frame.e-check, .e-css.e-checkbox-wrapper .e-frame.e-check {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+
+    .e-treeview .e-list-item.e-hover > .e-text-content .e-icon-collapsible {
+        color: #fff;
+    }
+
+    .e-treeview .e-list-item.e-hover > .e-text-content .e-icon-expandable {
+        color: #fff;
+    }
+
+    .e-treeview .e-list-item.e-hover > .e-text-content .e-list-text {
+        color: #fff;
+    }
+
+    .e-treeview .e-list-item.e-active.e-animation-active > .e-text-content .e-list-text {
+        color: #fff;
+    }
+
+    .e-treeview .e-list-item.e-active > .e-text-content {
+        background-color: #2a2a3c;
+        color: #fff;
+    }
+
+    .e-treeview .e-list-item.e-active > .e-fullrow {
+        background-color: #2a2a3c;
+        border-color: #2a2a3c;
+    }
+
+    .e-treeview .e-list-item.e-active.e-animation-active > .e-fullrow {
+        background-color: #2a2a3c;
+        border-color: #2a2a3c;
+    }
+
+    .e-treeview .e-list-item.e-hover > .e-fullrow {
+        background-color: #2a2a3c;
+        border-color: #2a2a3c;
+    }
+
+    .e-treeview .e-list-item.e-active.e-hover > .e-fullrow {
+        background-color: #2a2a3c;
+        border-color: #2a2a3c;
+        color: #fff;
+    }
+
+    .e-treeview .e-list-text {
+        color: #fff;
+        font-size: 14px;
+    }
+
+
+
+    .e-dropdownbase .e-list-item.e-item-focus, .e-dropdownbase .e-list-item.e-active, .e-dropdownbase .e-list-item.e-active.e-hover, .e-dropdownbase .e-list-item.e-hover {
+        background-color: var(--primary);
+        color: #fff;
+    }
+
+    .e-schedule .e-timeline-view .e-appointment, .e-schedule .e-timeline-month-view .e-appointment {
+        cursor: pointer;
+    }
+
+    .e-schedule .e-agenda-view .e-appointment {
+        border-left: 0px solid var(--primary);
+        cursor: pointer;
+    }
+
+    .e-quick-popup-wrapper .e-event-popup .e-popup-header .e-subject-wrap .e-subject {
+        border-left: 6px solid var(--primary);
+    }
+
+    .e-btn.e-primary, .e-css.e-btn.e-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+
+    .e-footer-content .e-btn.e-primary.e-flat:not([DISABLED]) {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+
+    /*BS Navbar*/
+
+
+    .nav-tabs .nav-item .nav-link {
+        font-size: 0.9rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .e-input-group, .e-input-group.e-control-wrapper {
+        border-radius: 0px;
+    }
+
+        .e-input-group.e-control-wrapper.e-disabled input.e-input {
+            background: var(--light);
+        }
+
+    /* Fieldset */
+    fieldset {
+        background-color: #fff;
+        width: 100%;
+        padding: 15px;
+        margin-left: 0px;
+        margin-right: 0px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #dee2e6;
+    }
+
+
+    /* For FormCard */
+    .form-card {
+        border: 1px solid #dee2e6;
+        width: 100%;
+        overflow-y: auto;
+    }
+
+
+
+    .form-card-header {
+        background-color: #ffffff;
+        color: #000000;
+        padding: 10px;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        text-align: left;
+    }
+
+    .form-card-body {
+        background-color: #ffffff;
+        padding-top: 5px;
+        padding-right: 0;
+        padding-bottom: 5px;
+        padding-left: 0px;
+    }
+
+    .form-card-footer {
+        background-color: #ffffff;
+        color: #000000;
+        padding-top: 5px;
+        padding-right: 0;
+        padding-bottom: 5px;
+        padding-left: 0px;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        text-align: left;
+    }
+
+    .form-label {
+        margin-bottom: 0px;
+        font-size: 0.875em;
+    }
+
+    .form-group {
+        margin-top: 0px;
+    }
+
+
+
+    .sticky-top {
+        z-index: 900 !important;
+    }
+
+    .content .navbar .navbar-nav .dropdown-item {
+        background-color: transparent !important;
+    }
+
+    .small-italic-left {
+        font-size: small;
+        font-style: italic;
+        text-align: left;
+        margin-bottom: -10px;
+        margin-left: 0px;
+        padding-top: 10px;
+    }
+
+    .small-italic {
+        font-size: small;
+        font-style: italic;
+        position: relative;
+        margin: 10px;
+    }
+
+        .small-italic::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+
+
+</style>
+<style>
+    /* CSS scrollbar sidebar */
+    #navbarnav::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    #navbarnav::-webkit-scrollbar-track {
+        background-color: #191C24;
+    }
+
+    #navbarnav::-webkit-scrollbar-thumb {
+        background-color: #2a2a3c;
+        border-radius: 6px;
+        border: 3px solid #191C24;
+        transition: filter 0.3s;
+    }
+
+        #navbarnav::-webkit-scrollbar-thumb:hover {
+            cursor: pointer;
+            background-color: var(--dark);
+        }
+
+</style>
+<style>
+    /* CSS scrollbar other */
+    ::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: #f8f9fa;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #dee2e6;
+        border-radius: 6px;
+        border: 3px solid #f8f9fa;
+        transition: filter 0.3s;
+    }
+
+        ::-webkit-scrollbar-thumb:hover {
+            cursor: pointer;
+            background-color: var(--primary);
+        }
+
+</style>
+<style>
+    #navbarnav {
+        width: 250px;
+        height: 70vh;
+        overflow-y: auto;
+    }
+
+    a {
+        color: var(--primary);
+    }
+
+    .nav-link {
+        color: var(--primary);
+    }
+
+    .text-primary {
+        color: var(--primary) !important;
+    }
+
+    :root {
+        --primary: #1b84ff;
+        --bs-blue: #1b84ff;
+        --bs-primary: #1b84ff;
+    }
+</style>
+
+
+@* smaller form *@
+<style>
+    .select2-container--bootstrap-5 .select2-results__option {
+        font-size: 0.9rem !important;
+        line-height: 1.5 !important;
+    }
+
+    form input.form-control,
+    form textarea.form-control,
+    form select.form-control,
+    .select2-container--bootstrap-5 .select2-selection {
+        height: calc(1.5em + 0.75rem + 2px);
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        border-radius: 0.25rem;
+        box-shadow: none;
+        border: 1px solid #ced4da;
+    }
+
+    form textarea.form-control {
+        height: auto;
+    }
+
+    form .row.mb-3 {
+        margin-bottom: 0.5rem;
+    }
+
+    .card-header h5 {
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+
+</style>
+
+
+
+

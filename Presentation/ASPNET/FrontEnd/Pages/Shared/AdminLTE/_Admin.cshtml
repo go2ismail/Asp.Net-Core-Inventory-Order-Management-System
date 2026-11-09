@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"]</title>
+
+    @await Html.PartialAsync("~/FrontEnd/Pages/Shared/AdminLTE/__css.cshtml")
+    @await RenderSectionAsync("styles", required: false)
+
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+    </style>
+
+    @* vue *@
+    <script src="~/lib/vue/vue.global.prod.js"></script>
+
+
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <!-- Site wrapper -->
+    <div class="wrapper">
+        <!-- Navbar -->
+        @await Html.PartialAsync("~/FrontEnd/Pages/Shared/AdminLTE/__navbar.cshtml")
+        <!-- /.navbar -->
+        <!-- Main Sidebar Container -->
+        @await Html.PartialAsync("~/FrontEnd/Pages/Shared/AdminLTE/__sidebar.cshtml")
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper p-4">
+            @Html.AntiForgeryToken()
+            @RenderBody()
+        </div>
+        <!-- /.content-wrapper -->
+        @await Html.PartialAsync("~/FrontEnd/Pages/Shared/AdminLTE/__footer.cshtml")
+
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+            <!-- Control sidebar content goes here -->
+        </aside>
+        <!-- /.control-sidebar -->
+    </div>
+    <!-- ./wrapper -->
+    @await Html.PartialAsync("~/FrontEnd/Pages/Shared/AdminLTE/__js.cshtml")
+    @await RenderSectionAsync("scripts", required: false)
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            async function getAvatar() {
+                try {
+                    const avatar = StorageManager.getAvatar();
+                    const response = await AxiosManager.get('/FileImage/GetImage?imageName=' + avatar, {
+                        responseType: 'blob'
+                    });
+                    
+                    if (response.status === 200) {
+                        const reader = new FileReader();
+                        reader.onloadend = function () {
+                            const base64Image = reader.result;
+                            document.getElementById('AvatarImageSide').src = base64Image;
+                        };
+                        reader.readAsDataURL(response.data);
+                    } else {
+                        console.error('Error:', response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+            getAvatar();
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            async function getCompany() {
+                try {
+                    const response = await AxiosManager.get('/Company/GetCompanyList', {});
+                    const data = response?.data?.content?.data;
+                    
+                    if (data && data.length > 0) {
+                        StorageManager.saveCompany(data[0]);
+
+                        const companyName = data[0]?.name ?? 'Default Company';
+                        const companyWeb = data[0]?.website ?? '#';
+                        const year = new Date().getFullYear();
+                        const currency = data[0]?.currency ?? '---';
+
+                        document.getElementById('footerContent').innerHTML =
+                            `© ${year} <a href="${companyWeb}">${companyName}</a>, All Right Reserved.`;
+                        document.getElementById('topbarContent').innerHTML =
+                            `Currency: ${currency}`;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+            getCompany();
+        });
+    </script>
+
+
+</body>
+</html>

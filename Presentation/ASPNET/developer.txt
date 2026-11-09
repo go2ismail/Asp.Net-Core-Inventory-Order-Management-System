@@ -1,0 +1,5 @@
+﻿this product developed by: go2ismail@gmail.com
+open for freelance work (minimum contract length is one month): start from USD 2000 / month. 
+
+=> Please help us grow by sharing this app to your friends, family, and colleagues.
+=> Please support us by give GitHub Star to this project: https://github.com/go2ismail/Asp.Net-Core-Inventory-Order-Management-System

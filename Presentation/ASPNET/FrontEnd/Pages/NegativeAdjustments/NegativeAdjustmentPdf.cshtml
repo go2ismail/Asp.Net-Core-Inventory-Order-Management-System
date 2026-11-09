@@ -1,0 +1,204 @@
+﻿@page
+@attribute [Authorize(Roles = "NegativeAdjustments")]
+@{
+    ViewData["Title"] = "Negative Adjustment PDF";
+}
+
+<div id="app" class="row">
+    <div class="col-12">
+        <div class="print-indicator" v-cloak>
+            <div class="content-wrapper">
+                <div>
+                    <button id="download-pdf" class="btn btn-danger d-flex align-items-center" v-on:click="handler.downloadPDF" v-bind:disabled="state.isDownloading">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" v-if="state.isDownloading"></span>
+                        <span class="button-text" v-if="!state.isDownloading">
+                            <i class="bi bi-file-earmark-pdf-fill me-2"></i> Download PDF
+                        </span>
+                    </button>
+                </div>
+                <div id="content" class="print-area">
+                    <div class="company-info">
+                        <h2>{{ state.company.name }}</h2>
+                        <p>{{ state.companyAddress }}</p>
+                        <p>Email: {{ state.company.emailAddress }} | Phone: {{ state.company.phoneNumber }}</p>
+                    </div>
+
+                    <h1>Negative Adjustment</h1>
+
+                    <div class="info-container">
+                        <table class="details-table">
+                            <tr>
+                                <th colspan="2">Adjustment Information</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Number:</strong></td>
+                                <td>{{ state.number }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date:</strong></td>
+                                <td>{{ state.date }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <table class="product-table" border="1" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th>Warehouse</th>
+                                <th>Product</th>
+                                <th>Movement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in state.mappedItems" :key="item.product + item.warehouse">
+                                <td>{{ item.warehouse }}</td>
+                                <td>{{ item.product }}</td>
+                                <td>{{ item.movement }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="summary">
+                        <div class="column"></div>
+                        <div class="column">
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                                <tr>
+                                    <td style="font-weight: bold; font-size: 1.2em;">Total Movement:</td>
+                                    <td style="text-align: right; font-weight: bold; font-size: 1.2em; color: #2c3e50;">
+                                        {{ state.movementTotal }}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS -->
+<style>
+    .print-indicator {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        height: 100vh;
+        background-color: #f8f9fa;
+        position: relative;
+        overflow-y: auto;
+        padding: 30px;
+    }
+
+
+    .content-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .print-area {
+        width: 210mm;
+        padding: 10mm;
+        background-color: white;
+        border: 1px dashed #cccccc;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #download-pdf {
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .company-info {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+        .company-info h2 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .company-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 28px;
+        color: #333;
+    }
+
+    .info-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        gap: 10px;
+    }
+
+    .details-table {
+        flex: 1;
+        padding: 5px 8px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+        .details-table th, .details-table td {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+
+        .details-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+            height: 35px;
+            vertical-align: middle;
+        }
+
+
+
+    .product-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+        .product-table th, .product-table td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        .product-table th {
+            background-color: #f2f2f2;
+        }
+
+    .summary {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        font-size: 14px;
+    }
+
+        .summary .column {
+            width: 48%;
+        }
+
+        .summary p {
+            margin: 5px 0;
+            text-align: right;
+        }
+</style>
+
+@section scripts {
+    <script src="~/FrontEnd/Pages/NegativeAdjustments/NegativeAdjustmentPdf.cshtml.js"></script>
+}

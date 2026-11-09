@@ -1,40 +1,39 @@
-﻿ 
+# Creative Commons Attribution 4.0 International (CC BY 4.0)  
 
- => FREE BUSINESS APP LICENSE BY INDOTALENT
+This project is licensed under the **Creative Commons Attribution 4.0 International License**.  
 
- All free Business Application by INDOTALENT are licensed under a Creative Commons Attribution 4.0 International License which means you are not allowed to remove the author�s credit link/attribution link/backlink.
+## You are free to:  
 
- When you download or use our free Business Application, it will attribute the following conditions.
+- **Share** – Copy and redistribute the material in any medium or format.  
+- **Adapt** – Remix, transform, and build upon the material for any purpose, even commercially.  
 
+## Under the following terms:  
 
- => YOU ARE ALLOWED
+- **Attribution** – You must give appropriate credit, provide a link to the license, and indicate if changes were made.  
+  You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.  
+- **No additional restrictions** – You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.  
 
-      1. You are allowed to use for your personal and commercial purposes.
+---
 
-      2. You are allowed to modify/customize however you like.
+## 📌 Third-Party Dependencies  
 
-      3. You are allowed to convert/port for use for any CMS.
+This project includes third-party components:  
 
-      4. You are allowed to share/distribute under the INDOTALENT brand name.
+### 1️⃣ AdminLTE  
+- A free admin dashboard template licensed under the **MIT License**.  
+- More details: [AdminLTE GitHub Repository](https://github.com/ColorlibHQ/AdminLTE)  
 
-      5. You are allowed to put a screenshot or a link on your blog posts or any other websites.
+### 2️⃣ Syncfusion Community Edition  
+- Some UI components in this project are built using **Syncfusion Community Edition**.  
+- **Important Notice**: Syncfusion Community Edition is **free only for individual developers and small businesses**.  
+- If you are using this project, please ensure that you **register for Syncfusion Community Edition** to comply with their licensing terms.  
+- More details: [Syncfusion Community License](https://www.syncfusion.com/products/communitylicense)  
 
+---
 
- => YOU ARE NOT ALLOWED
+## 📜 Full License Text  
 
-      1. You are not allowed to remove the author�s credit link/attribution link/backlink without purchasing Credit Removal License ( https://store.indotalent.com ).
+Read the full **Creative Commons Attribution 4.0 International License (CC BY 4.0)** here:  
+🔗 [https://creativecommons.org/licenses/by/4.0/](https://creativecommons.org/licenses/by/4.0/)  
 
-      2. You are not allowed to sell, resale, rent, lease, license, or sub-license.
-
-      3. You are not allowed to upload to any third party websites without our permission.
-
-
- => This app using Syncfusion Community Edition: https://www.syncfusion.com/products/communitylicense
-
- => This app using AdminLTE admin template: https://adminlte.io/
-
-
- => This license can be terminated if you breach any of these conditions.
-
-
- => PURCHASE CREDIT REMOVAL LICENSE ( https://store.indotalent.com )
+---

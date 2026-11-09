@@ -5,3 +5,4 @@
 *.php linguist-vendored
 
 *.cshtml linguist-language=C#
+*.css linguist-detectable=false
