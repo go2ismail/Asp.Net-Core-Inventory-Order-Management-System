@@ -110,7 +110,12 @@ For deployment to IIS:
 
 # E2E Tests (Playwright)
 
-End-to-end tests use **Playwright for .NET** with **NUnit** (`Tests/E2E`). They exercise login, warehouse CRUD, and UI smoke flows against a locally started application.
+End-to-end tests use **Playwright for .NET** with **NUnit** (`Tests/E2E`). They exercise login, warehouse/customer/vendor/product CRUD, and UI smoke flows against a locally started application.
+
+Test fixtures:
+- `LoginTests` - valid and invalid credentials.
+- `UiSmokeTests` - home, login, profile, warehouse list, and dashboard pages.
+- `WarehouseCrudTests`, `CustomerCrudTests`, `VendorCrudTests`, `ProductCrudTests` - required-name validation plus create, update, and delete through the list page modal.
 
 Prerequisites:
 - .NET 10 SDK
