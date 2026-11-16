@@ -55,6 +55,15 @@ public class SecurityService : ISecurityService
         _configuration = configuration;
     }
 
+    private void EnsureOperatingOnCurrentUser(string userId)
+    {
+        var currentUserId = _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(currentUserId) || userId != currentUserId)
+        {
+            throw new UnauthorizedAccessException("You can only access your own profile.");
+        }
+    }
+
     public async Task<LoginResultDto> LoginAsync(
         string email,
         string password,
@@ -348,6 +357,8 @@ public class SecurityService : ISecurityService
         string userId,
         CancellationToken cancellationToken = default)
     {
+        EnsureOperatingOnCurrentUser(userId);
+
         var profiles = await _context.Users
             .Where(x => x.Id == userId)
             .Select(x => new GetMyProfileListResultDto
@@ -370,6 +381,8 @@ public class SecurityService : ISecurityService
         CancellationToken cancellationToken
         )
     {
+        EnsureOperatingOnCurrentUser(userId);
+
         var user = await _context.Users.Where(x => x.Id == userId).SingleOrDefaultAsync(cancellationToken);
 
         if (user == null)
@@ -392,6 +405,8 @@ public class SecurityService : ISecurityService
         CancellationToken cancellationToken
     )
     {
+        EnsureOperatingOnCurrentUser(userId);
+
         if (newPassword != confirmNewPassword)
         {
             throw new Exception("New password and confirm password do not match.");
@@ -698,6 +713,8 @@ public class SecurityService : ISecurityService
         CancellationToken cancellationToken
         )
     {
+        EnsureOperatingOnCurrentUser(userId);
+
         var user = await _context.Users.Where(x => x.Id == userId).SingleOrDefaultAsync(cancellationToken);
 
         if (user == null)
