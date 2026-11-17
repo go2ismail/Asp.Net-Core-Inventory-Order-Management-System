@@ -5,14 +5,24 @@
         });
 
         const logout = async () => {
-            try {
-                const response = await AxiosManager.post('/Security/Logout', {
-                    userId: StorageManager.getUserId()
-                });
-                return response;
-            } catch (error) {
-                throw error;
-            }
+            const response = await AxiosManager.post('/Security/Logout', {});
+            return response;
+        }
+
+        const showError = (message) => {
+            Swal.fire({
+                icon: 'error',
+                title: 'An Error Occurred',
+                text: message || 'Please try again.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        const redirectHome = () => {
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
         }
 
         const handleSubmit = async () => {
@@ -22,9 +32,9 @@
                 await new Promise(resolve => setTimeout(resolve, 300));
 
                 const response = await logout();
-                if (response.data.code === 200) {
-                    StorageManager.clearStorage();
+                StorageManager.clearStorage();
 
+                if (response.data.code === 200) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Logout Successful',
@@ -32,25 +42,16 @@
                         timer: 2000,
                         showConfirmButton: false
                     });
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 2000);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Logout Failed',
-                        text: response.data.message ?? 'Logout Failed.',
-                        confirmButtonText: 'Try Again'
-                    });
+                    showError(response.data.message ?? 'Logout Failed.');
                 }
 
+                redirectHome();
+
             } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'An Error Occurred',
-                    text: error.response?.data?.message || 'Please try again.',
-                    confirmButtonText: 'OK'
-                });
+                StorageManager.clearStorage();
+                showError(error.response?.data?.message || 'Please try again.');
+                redirectHome();
             } finally {
                 state.isSubmitting = false;
             }
@@ -64,6 +65,3 @@
 };
 
 Vue.createApp(App).mount('#app');
-
-
-

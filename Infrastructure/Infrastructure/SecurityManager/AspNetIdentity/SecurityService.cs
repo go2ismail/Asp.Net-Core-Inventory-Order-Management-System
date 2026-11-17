@@ -144,6 +144,8 @@ public class SecurityService : ISecurityService
         CancellationToken cancellationToken = default
         )
     {
+        EnsureOperatingOnCurrentUser(userId);
+
         var user = await _userManager.FindByIdAsync(userId);
         if (user != null)
         {
