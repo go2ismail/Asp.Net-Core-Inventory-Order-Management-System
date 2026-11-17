@@ -6,10 +6,12 @@ namespace ASPNET.BackEnd.Common.Handlers;
 
 public class CustomExceptionHandler : IExceptionHandler
 {
+    private readonly ILogger<CustomExceptionHandler> _logger;
     private readonly Dictionary<Type, Func<HttpContext, Exception, Task>> _exceptionHandlers;
 
-    public CustomExceptionHandler()
+    public CustomExceptionHandler(ILogger<CustomExceptionHandler> logger)
     {
+        _logger = logger;
         _exceptionHandlers = new()
             {
                 { typeof(Exception), HandleException },
@@ -35,19 +37,29 @@ public class CustomExceptionHandler : IExceptionHandler
 
     private async Task HandleException(HttpContext httpContext, Exception ex)
     {
-        var statusCode = httpContext.Response.StatusCode != 200
+        var statusCode = httpContext.Response.StatusCode != StatusCodes.Status200OK
             ? httpContext.Response.StatusCode
             : StatusCodes.Status500InternalServerError;
 
-        var errorMessage = ex.Message;
+        if (statusCode >= StatusCodes.Status500InternalServerError)
+        {
+            _logger.LogError(ex, "Unhandled exception for {Method} {Path}",
+                httpContext.Request.Method, httpContext.Request.Path);
+        }
+        else
+        {
+            _logger.LogWarning(ex, "Request rejected with {StatusCode} for {Method} {Path}",
+                statusCode, httpContext.Request.Method, httpContext.Request.Path);
+        }
 
         var result = new ApiErrorResult
         {
             Code = statusCode,
-            Message = $"Exception: {errorMessage}",
-            Error = new Error(ex.InnerException?.Message, ex.Source, ex.StackTrace, ex.GetType().Name)
+            Message = $"Exception: {ex.Message}",
+            Error = new Error(null, null, null, ex.GetType().Name)
         };
 
+        httpContext.Response.StatusCode = statusCode;
         httpContext.Response.ContentType = "application/json";
         await httpContext.Response.WriteAsJsonAsync(result);
     }
@@ -68,4 +80,3 @@ public class CustomExceptionHandler : IExceptionHandler
     }
 
 }
-
