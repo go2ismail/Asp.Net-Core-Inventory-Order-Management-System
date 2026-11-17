@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var bodyClass = ViewData["BodyClass"] as string;
+    var contentWrapperClass = bodyClass == "grid-page"
+        ? "content-wrapper"
+        : "content-wrapper p-4";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -20,7 +26,7 @@
 
 </head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini @bodyClass">
     <!-- Site wrapper -->
     <div class="wrapper">
         <!-- Navbar -->
@@ -30,7 +36,7 @@
         @await Html.PartialAsync("~/FrontEnd/Pages/Shared/AdminLTE/__sidebar.cshtml")
 
         <!-- Content Wrapper. Contains page content -->
-        <div class="content-wrapper p-4">
+        <div class="@contentWrapperClass">
             @Html.AntiForgeryToken()
             @RenderBody()
         </div>

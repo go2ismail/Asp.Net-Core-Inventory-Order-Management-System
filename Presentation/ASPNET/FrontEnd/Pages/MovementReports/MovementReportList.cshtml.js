@@ -49,7 +49,7 @@
             obj: null,
             create: async (dataSource) => {
                 mainGrid.obj = new ej.pivotview.PivotView({
-                    height: '240px',
+                    height: '100%',
                     width: '100%',
                     dataSourceSettings: {
                         dataSource: dataSource,

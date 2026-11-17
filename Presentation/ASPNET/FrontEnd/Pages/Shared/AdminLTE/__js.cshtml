@@ -124,3 +124,35 @@
         });
     }
 </script>
+
+<script>
+    // Refresh full screen grid layout when the grid container changes size
+    document.addEventListener('DOMContentLoaded', function () {
+        const containers = Array.from(document.querySelectorAll(
+            'body.grid-page .content-wrapper > #app > .row > .col-12 > .grid-container'
+        ));
+        if (!containers.length || typeof ResizeObserver === 'undefined') {
+            return;
+        }
+
+        let timer = null;
+        const refresh = () => {
+            if (timer) {
+                clearTimeout(timer);
+            }
+            timer = setTimeout(() => {
+                containers.forEach((container) => {
+                    container.querySelectorAll('.e-grid, .e-pivotview').forEach((element) => {
+                        const control = element.ej2_instances && element.ej2_instances[0];
+                        if (control && typeof control.refresh === 'function') {
+                            control.refresh();
+                        }
+                    });
+                });
+            }, 150);
+        };
+
+        const observer = new ResizeObserver(refresh);
+        containers.forEach((container) => observer.observe(container));
+    });
+</script>
