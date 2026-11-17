@@ -1,4 +1,5 @@
-﻿using Application.Common.Services.EmailManager;
+﻿using Application.Common.Exceptions;
+using Application.Common.Services.EmailManager;
 using Application.Common.Services.SecurityManager;
 using Domain.Entities;
 using Infrastructure.DataAccessManager.EFCore.Contexts;
@@ -53,6 +54,17 @@ public class SecurityService : ISecurityService
         _httpContextAccessor = httpContextAccessor;
         _roleManager = roleManager;
         _configuration = configuration;
+    }
+
+    private void EnsureOperatingOnCurrentUser(string userId)
+    {
+        var currentUserId = _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(currentUserId)
+            || !string.Equals(userId, currentUserId, StringComparison.Ordinal))
+        {
+            throw new ForbiddenAccessException("You can only access your own profile.");
+        }
     }
 
     public async Task<LoginResultDto> LoginAsync(
@@ -348,6 +360,8 @@ public class SecurityService : ISecurityService
         string userId,
         CancellationToken cancellationToken = default)
     {
+        EnsureOperatingOnCurrentUser(userId);
+
         var profiles = await _context.Users
             .Where(x => x.Id == userId)
             .Select(x => new GetMyProfileListResultDto
@@ -370,6 +384,8 @@ public class SecurityService : ISecurityService
         CancellationToken cancellationToken
         )
     {
+        EnsureOperatingOnCurrentUser(userId);
+
         var user = await _context.Users.Where(x => x.Id == userId).SingleOrDefaultAsync(cancellationToken);
 
         if (user == null)
@@ -392,6 +408,8 @@ public class SecurityService : ISecurityService
         CancellationToken cancellationToken
     )
     {
+        EnsureOperatingOnCurrentUser(userId);
+
         if (newPassword != confirmNewPassword)
         {
             throw new Exception("New password and confirm password do not match.");
@@ -698,6 +716,8 @@ public class SecurityService : ISecurityService
         CancellationToken cancellationToken
         )
     {
+        EnsureOperatingOnCurrentUser(userId);
+
         var user = await _context.Users.Where(x => x.Id == userId).SingleOrDefaultAsync(cancellationToken);
 
         if (user == null)

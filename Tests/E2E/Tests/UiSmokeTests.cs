@@ -36,6 +36,10 @@ public class UiSmokeTests : E2ETestBase
     public async Task ProfilePage_LoadsAfterLogin()
     {
         await LoginAsync();
+
+        var profileRow = Page.Locator(".e-grid .e-row").First;
+        await Expect(profileRow).ToBeVisibleAsync(new Microsoft.Playwright.LocatorAssertionsToBeVisibleOptions { Timeout = 20000 });
+        await Expect(profileRow).ToContainTextAsync("Root", new Microsoft.Playwright.LocatorAssertionsToContainTextOptions { Timeout = 20000 });
     }
 
     [Test]
