@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Infrastructure.SecurityManager.Tokens;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 namespace ASPNET.BackEnd.Controllers;
 
@@ -48,11 +49,13 @@ public class SecurityController : BaseApiController
         });
     }
 
-    [AllowAnonymous]
+    [Authorize]
     [HttpPost("Logout")]
-    public async Task<ActionResult<ApiSuccessResult<LogoutResult>>> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<ApiSuccessResult<LogoutResult>>> LogoutAsync(CancellationToken cancellationToken)
     {
-        var response = await _sender.Send(request, cancellationToken);
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var response = await _sender.Send(new LogoutRequest { UserId = currentUserId }, cancellationToken);
 
         // Clear HttpOnly cookie on logout
         Response.Cookies.Append("accessToken", "", new CookieOptions
