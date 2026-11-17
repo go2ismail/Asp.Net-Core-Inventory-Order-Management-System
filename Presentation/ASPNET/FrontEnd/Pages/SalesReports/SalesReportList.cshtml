@@ -1,6 +1,7 @@
 ﻿@page
 @attribute [Authorize(Roles = "SalesReports")]
 @{
+    ViewData["BodyClass"] = "grid-page";
     ViewData["Title"] = "Sales Report List";
 }
 

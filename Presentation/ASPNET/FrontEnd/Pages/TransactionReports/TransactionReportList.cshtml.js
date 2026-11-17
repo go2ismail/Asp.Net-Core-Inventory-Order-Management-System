@@ -49,7 +49,7 @@
             obj: null,
             create: async (dataSource) => {
                 mainGrid.obj = new ej.grids.Grid({
-                    height: '240px',
+                    height: '100%',
                     dataSource: dataSource,
                     allowFiltering: true,
                     allowSorting: true,
